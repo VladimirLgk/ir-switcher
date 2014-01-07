@@ -351,12 +351,15 @@ void main(void)
     {
        __delay_ms(500);
        error = 0;
+
+#ifdef LCD_DEBUG
        lcd_data[0] = 0b10000000;
        lcd_puts(DIGIT0 , lcd_data, 1);
-     
+#endif
        unsigned char data = getIrData();
        if(error == 0)
        {
+#ifdef LCD_DEBUG
             lcd_data[0] = 0;
             lcd_data[1] = 0b01110011; //R
             lcd_data[2] = 0b00011000; //R symbol
@@ -365,9 +368,11 @@ void main(void)
             lcd_data[5] = 0;
             lcd_data[6] = 0;
             lcd_puts(DIGIT0 , lcd_data, 7);
+#endif
        }
        else
        {
+#ifdef LCD_DEBUG
             lcd_data[0] = 0; //reset wait mark
             lcd_data[1] = 0b01111001; //E
             lcd_data[2] = 0b00000000; //E symbol
@@ -376,6 +381,7 @@ void main(void)
             lcd_data[5] = to7hex((count >> 4) & 0xf);
             lcd_data[6] = to7hex(count & 0xf);
             lcd_puts(DIGIT0,lcd_data, 7);
+#endif
        }
     }
 }
