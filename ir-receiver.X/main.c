@@ -34,8 +34,7 @@ const unsigned char osccallibrate @ 0x3FF = 0x30;
 #define WrongHeader 6
 #define WrongData 7
 
-volatile unsigned char error;
-volatile unsigned char count;
+unsigned char error;
 //unsigned char ir_count;
 /*
 void readIrSensor()
@@ -45,7 +44,7 @@ void readIrSensor()
     GLED = 0;
     __delay_ms(120);
     return;
-}*/
+}
 
 void lcd_write(unsigned char data)
 {
@@ -62,20 +61,12 @@ void lcd_write(unsigned char data)
        bitCount--;
    }
 }
-
-void lcd_puts(unsigned char address, unsigned char * data, unsigned char size)
+/*
+void lcd_data(unsigned char cmd, unsigned char data)
 {
     STB = 0;
-    lcd_write(0b11000000|address);
-    if(data != NULL)
-    {
-        while(size--)
-        {
-            lcd_write(*data++);
-            lcd_write(0);
-        }
-    }
-
+    lcd_write(cmd);
+    lcd_write(data);
     STB = 1;
 }
 void lcd_cmd(unsigned char cmd)
@@ -149,7 +140,7 @@ unsigned char to7hex(unsigned char val)
             return 0b01110001;
     }
 }
-
+*/
 void putch(unsigned char ch)
 {
     unsigned char bit_count = 8;
@@ -169,7 +160,7 @@ void putch(unsigned char ch)
     __delay_us(98);
 }
 
-void printUartInt(unsigned int data)
+void printInt(unsigned int data)
 {
     unsigned int div = 1000;
     while(div)
@@ -183,25 +174,43 @@ void printUartInt(unsigned int data)
         div = div/10;
     }
 }
-
-void printInt(unsigned int data)
+/*
+void printInt(unsigned int data, unsigned char use_uart)
 {
-    STB = 0;
-    lcd_write(0b11000000 | DIGIT3 );
-
+    if(!use_uart)
+    {
+        STB = 0;
+        lcd_write(0b11000000 | DIGIT3 );
+    }
     unsigned int div = 1000;
     while(div)
     {
         unsigned char val = 0;
         if(data >= div)
             val = data/div;
-	lcd_write(to7hex(val));
+        if(!use_uart)
+        {
+            lcd_write(to7hex(val));
+            lcd_write(0);
+        }
+        else
+        {
+            putch(val+0x30);
+        }
         data = data%div;
         div = div/10;
     }
-    STB = 1;
+    if(!use_uart)
+    {
+        STB = 1;
+    }
+    else
+    {
+        putch('\r');
+        putch('\n');
+    }
 }
-
+*/
 void configure(void)
 {
     //configure GPIO as Led driver, Lcd Driver,
@@ -219,7 +228,7 @@ void configure(void)
 
 unsigned char readIrSensor()
 {
-    unsigned char c=2;
+    unsigned char l=2;
     unsigned char port = IRPORT;
     do
     {
@@ -227,20 +236,16 @@ unsigned char readIrSensor()
         if( IRPORT != port)
             port = IRPORT;
         else
-            c--;
+            l--;
     }
-    while(c);
+    while(l);
     return port;
 }
 
 unsigned char readMark()
 {
-    GLED = 1;
-    while(!readIrSensor()){}
-    GLED = 0;
-
     //read first high mark
-    /*unsigned char*/ count = 0;
+    unsigned char count = 0;
     while(readIrSensor() == 1)
         count++;
 
@@ -266,7 +271,7 @@ unsigned char readMark()
 unsigned char readData(unsigned char * irdata, unsigned char size)
 {
     unsigned char value = 0;
-    /*unsigned char */count = 0;
+    unsigned char count = 0;
     unsigned char byte_count = 0;
     unsigned char mask = 1;
     value = 0;
@@ -320,12 +325,20 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
 
 unsigned char getIrData(void)
 {
+    unsigned char count = 0;
+    while(readIrSensor() == 0)
+        count++;
+
+    GLED = 1;
+    while(!readIrSensor()){}
+    GLED = 0;
+
     unsigned char irdata[5];
     error = readMark();
-    if(! error)
+    if(!error)
     {
         error = readData(irdata, sizeof(irdata));
-        if(! error)
+        if(!error)
         {
           if((irdata[0] == (unsigned char)~(irdata[1])) &&
               (irdata[0] == 0x82))
@@ -355,37 +368,25 @@ unsigned char toHex(unsigned char v)
 void main(void)
 {
     configure();
-    lcd_init();
-    unsigned char lcd_data[8];
     while(1)
     {
+       putch('\r');
+       putch('\n');
        __delay_ms(500);
-       error = 0;
-       lcd_data[0] = 0b10000000;
-       lcd_puts(DIGIT0 , lcd_data, 1);
-     
        unsigned char data = getIrData();
-       if(error == 0)
+       if(!error)
        {
-            lcd_data[0] = 0;
-            lcd_data[1] = 0b01110011; //R
-            lcd_data[2] = 0b00011000; //R symbol
-            lcd_data[3] = to7hex((data >> 4) & 0xf);
-            lcd_data[4] = to7hex(data & 0xf);
-            lcd_data[5] = 0;
-            lcd_data[6] = 0;
-            lcd_puts(DIGIT0 , lcd_data, 7);
+           putch('I');
+           putch('R');
+           putch(':');
+           putch(toHex((data >> 4) & 0xf));
+           putch(toHex(data & 0xf));
        }
        else
        {
-            lcd_data[0] = 0; //reset wait mark
-            lcd_data[1] = 0b01111001; //E
-            lcd_data[2] = 0b00000000; //E symbol
-            lcd_data[3] = to7hex((error >> 4) & 0xf);
-            lcd_data[4] = to7hex(error & 0xf);
-            lcd_data[5] = to7hex((count >> 4) & 0xf);
-            lcd_data[6] = to7hex(count & 0xf);
-            lcd_puts(DIGIT0,lcd_data, 7);
+           putch('E');
+           putch(':');
+           printInt(error);
        }
     }
 }
