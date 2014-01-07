@@ -35,7 +35,7 @@ unsigned char toHex(unsigned char v)
 }
 
 #define LCD_DEBUG
-#define UART_DEBUG
+//#define UART_DEBUG
 void uartErrorMessage();
 void uartOkMessage(unsigned char data);
 void lcdErrorMessage(unsigned char * msg);
@@ -52,7 +52,7 @@ void main(void)
     
     while(1)
     {
-       __delay_ms(500);
+       __delay_ms(200);
        error = 0;
 #ifdef LCD_DEBUG
       lcdMessage[0] = 0b10000000;
