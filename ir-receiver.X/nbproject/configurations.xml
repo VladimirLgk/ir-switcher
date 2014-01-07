@@ -15,6 +15,13 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>main.c</itemPath>
+    <itemPath>lcd.c</itemPath>
+    <itemPath>uart.c</itemPath>
+    <itemPath>ir.c</itemPath>
+    <itemPath>ir.h</itemPath>
+    <itemPath>lcd.h</itemPath>
+    <itemPath>uart.h</itemPath>
+    <itemPath>system.h</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
