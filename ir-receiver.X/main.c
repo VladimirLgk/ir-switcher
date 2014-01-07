@@ -36,16 +36,6 @@ const unsigned char osccallibrate @ 0x3FF = 0x30;
 
 volatile unsigned char error;
 volatile unsigned char count;
-//unsigned char ir_count;
-/*
-void readIrSensor()
-{
-    GLED = 1;
-    while(!IRPORT){}
-    GLED = 0;
-    __delay_ms(120);
-    return;
-}*/
 
 void lcd_write(unsigned char data)
 {
@@ -235,16 +225,17 @@ unsigned char readIrSensor()
 
 unsigned char readMark()
 {
+    //wait till first changing on ir port
     GLED = 1;
     while(!readIrSensor()){}
     GLED = 0;
 
     //read first high mark
-    /*unsigned char*/ count = 0;
+    count = 0;
     while(readIrSensor() == 1)
         count++;
 
-    if(count < 190 || count > 220)
+    if(count < 180 || count > 225)
     {
         //ir_count = count;
         return HiMarkError;
@@ -266,7 +257,6 @@ unsigned char readMark()
 unsigned char readData(unsigned char * irdata, unsigned char size)
 {
     unsigned char value = 0;
-    /*unsigned char */count = 0;
     unsigned char byte_count = 0;
     unsigned char mask = 1;
     value = 0;
@@ -275,7 +265,7 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
         count = 0;
         while(readIrSensor() == 1)
             count++;
-        if(count < 10 || count > 14)
+        if(count < 8 || count > 14)
             return LowBitError;
 
         count = 0;
@@ -283,7 +273,7 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
             count++;
 
         //test is it zero
-        if((count >=10 ) && ( count <=14) )
+        if((count >=8 ) && ( count <=14) )
             value &= ~mask;
         else if(count > 33)  //test is it one
             value |= mask;
