@@ -1,0 +1,840 @@
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001     list         p=12f629
+                      00002         #include p12f629.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC12F629 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00338         LIST
+                      00003 
+                      00004 ;   Set configuration bits using definitions from the include file, p16f84.inc
+2007   3FD4           00005         __config _INTRC_OSC_NOCLKOUT & _PWRTE_OFF & _WDT_OFF & _CP_OFF & _CPD_OFF & _MCLRE_OFF
+                      00006 
+                      00007 ;variables  definition
+                      00008         cblock 0x20
+  00000020            00009                 blinkCount
+  00000021            00010                 delayCounter
+  00000022            00011                 temp
+  00000023            00012                 Delay50MsCounter
+  00000024            00013                 DelayOutCounter
+  00000025            00014                 DelayInCounter
+  00000026            00015                 command
+  00000027            00016                 dataSize
+  00000028            00017                 lcdData:4
+  0000002C            00018                 byteToSend
+  0000002D            00019                 bitCount
+  0000002E            00020                 digitAddress
+  0000002F            00021                 firstDigit
+  00000030            00022                 secondDigit
+  00000031            00023                 irData:20
+  00000051            00024                 onCounterLow
+  00000052            00025                 onCounterHi
+  00000053            00026                 offCounterLow
+  00000054            00027                 offCounterHi
+                      00028         endc
+                      00029 ;constants
+  00000001            00030 STB equ GP1
+  00000000            00031 DAT equ GP0
+  00000005            00032 CLK equ GP5
+  00000002            00033 SERIAL equ GP2
+  00000003            00034 IRPORT equ GP3
+                      00035 
+  00000028            00036 DIGIT0 equ lcdData
+  0000002A            00037 DIGIT1 equ lcdData+.2
+  0000002C            00038 DIGIT2 equ lcdData+.4
+  0000002E            00039 DIGIT3 equ lcdData+.6
+  00000030            00040 DIGIT4 equ lcdData+.8
+  00000032            00041 DIGIT5 equ lcdData+.10
+  00000034            00042 DIGIT6 equ lcdData+.12
+                      00043 ;===============================================================================
+                      00044 ; Reset vector
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00045 ;==============================================================================
+                      00046     org     0
+0000   2???           00047     goto    Start
+                      00048 
+                      00049 ;===============================================================================
+                      00050 ;Programm vector
+                      00051 ;===============================================================================
+                      00052         org     0x50
+                      00053 ;===============================================================================
+                      00054 ;Return value of 7 segment char.
+                      00055 ;===============================================================================
+0050                  00056 getSymCode:
+0050   0782           00057         addwf   PCL,F
+0051   343F           00058         retlw   b'00111111' ; 0
+0052   3406           00059         retlw   b'00000110'     ; 1
+0053   345B           00060         retlw   b'01011011'     ; 2
+0054   344F           00061         retlw   b'01001111'     ; 3
+0055   3466           00062         retlw   b'01100110'     ; 4
+0056   346D           00063         retlw   b'01101101'     ; 5
+0057   347D           00064         retlw   b'01111101'     ; 6
+0058   3407           00065         retlw   b'00000111'     ; 7
+0059   347F           00066         retlw   b'01111111'     ; 8
+005A   346F           00067         retlw   b'01101111'     ; 9
+005B   3477           00068         retlw   b'01110111'     ; a
+005C   347C           00069         retlw   b'01111100'     ; b
+005D   3439           00070         retlw   b'00111001'     ; c
+005E   345E           00071         retlw   b'01011110'     ; d
+005F   3479           00072         retlw   b'01111001'     ; e
+0060   3471           00073         retlw   b'01110001'     ; f
+                      00074 
+0061                  00075 getAsciiCode:
+0061   0782           00076         addwf   PCL,F
+0062   3430           00077         retlw   0x30
+0063   3431           00078         retlw   0x31
+0064   3432           00079         retlw   0x32
+0065   3433           00080         retlw   0x33
+0066   3434           00081         retlw   0x34
+0067   3435           00082         retlw   0x35
+0068   3436           00083         retlw   0x36
+0069   3437           00084         retlw   0x37
+006A   3438           00085         retlw   0x38
+006B   3439           00086         retlw   0x39
+006C   3461           00087         retlw   'a'
+006D   3462           00088         retlw   'b'
+006E   3463           00089         retlw   'c'
+006F   3464           00090         retlw   'd'
+0070   3465           00091         retlw   'e'
+0071   3466           00092         retlw   'f'
+                      00093 
+                      00094 ;===============================================================================
+                      00095 ; convert hex to 7 segment symbol
+                      00096 ; input arg: W - value
+                      00097 ; Output args in: firstDigit, secondDigit
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00098 ;===============================================================================
+0072                  00099 valueToHex
+0072   00A2           00100         movwf temp
+0073   390F           00101         andlw 0xf
+0074   2???           00102         call getSymCode
+0075   00B0           00103         movwf secondDigit
+0076   0E22           00104         swapf temp, 0
+0077   390F           00105         andlw 0xf
+0078   2???           00106         call getSymCode
+0079   00AF           00107         movwf firstDigit
+007A   0008           00108         return
+                      00109 
+                      00110 ;===============================================================================
+                      00111 ; convert hex to ascii symbol
+                      00112 ; input arg: W - value
+                      00113 ; Output args in: firstDigit, secondDigit
+                      00114 ;===============================================================================
+007B                  00115 valueToAsciiHex
+007B   00A2           00116         movwf temp
+007C   390F           00117         andlw 0xf
+007D   2???           00118         call getAsciiCode
+007E   00B0           00119         movwf secondDigit
+007F   0E22           00120         swapf temp, 0
+0080   390F           00121         andlw 0xf
+0081   2???           00122         call getAsciiCode
+0082   00AF           00123         movwf firstDigit
+0083   0008           00124         return
+                      00125 
+                      00126 ;==============================================
+                      00127 ; Clear  display data
+                      00128 ;==============================================
+0084                  00129 clearLcdData
+0084   3028           00130         movlw lcdData
+0085   0084           00131         movwf FSR
+0086                  00132 nextClear
+0086   0180           00133         clrf INDF
+0087   0A84           00134         incf  FSR,1
+0088   0804           00135         movf  FSR,0
+0089   3A3C           00136         xorlw  lcdData+14
+008A   1D03           00137         btfss   STATUS,Z
+008B   2???           00138           goto  nextClear
+008C   0008           00139         return
+                      00140 ;===============================================================================
+                      00141 ; Display initialize
+                      00142 ;===============================================================================
+008D                  00143 InitDisplay
+008D   3004           00144         movlw   .4
+008E   2???           00145         call    Delay
+008F   01A7           00146         clrf    dataSize
+0090   3040           00147         movlw   b'01000000'     ;Command 2: write data, increment address
+0091   2???           00148         call    sendDisplayCommand
+0092   0000           00149         nop
+0093   30C0           00150         movlw   b'11000000'     ;Command 3: set address
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0094   2???           00151         call    sendDisplayCommand
+0095   0000           00152         nop
+0096   2???           00153         call    clearDisplay
+0097   0000           00154         nop
+0098   3088           00155         movlw   b'10001000'     ;Command 4: switch on display
+0099   2???           00156         call    sendDisplayCommand
+009A   0008           00157         return
+                      00158 
+                      00159 ;===============================================================================
+                      00160 ;Sends
+                      00161 ;===============================================================================
+009B                  00162 clearDisplay
+009B   3014           00163         movlw 14
+009C   00A7           00164         movwf dataSize
+009D   30C0           00165         movlw   b'11000000'     ;Command 3: set address
+009E   1085           00166         bcf     GPIO, STB
+009F   2???           00167         call sendOneByte
+00A0                  00168 sendData0
+00A0   0103           00169         clrw
+00A1   2???           00170         call sendOneByte
+00A2   03A7           00171         decf dataSize,1
+00A3   1D03           00172         btfss   STATUS,Z
+00A4   2???           00173                 goto sendData0
+00A5   1485           00174         bsf     GPIO, STB
+00A6   0008           00175         return
+                      00176 
+                      00177 ;===============================================================================
+                      00178 ; print One byte in lcd in begin of line.
+                      00179 ; W contains byte to print
+                      00180 ;===============================================================================
+00A7                  00181 printHexOnLcd
+00A7   2???           00182         call valueToHex
+00A8   2???           00183         call clearLcdData
+00A9   082F           00184         movf    firstDigit, 0
+00AA   00B2           00185         movwf   DIGIT5
+00AB   0830           00186         movf    secondDigit, 0
+00AC   00B4           00187         movwf   DIGIT6
+00AD   300E           00188         movlw .14
+00AE   00A7           00189         movwf dataSize
+00AF   30C0           00190         movlw b'11000000'
+00B0   2???           00191         call sendDisplayCommand
+00B1   0008           00192         return
+                      00193 
+                      00194 ;===============================================================================
+                      00195 ; send One byte to the display data in specified address
+                      00196 ; digitAddress is address of data
+                      00197 ; dataToSend, dataToSend+1  is word to send
+                      00198 ;===============================================================================
+00B2                  00199 sendDataToDisplay
+00B2   082E           00200         movf digitAddress,0
+00B3   38C0           00201         iorlw   b'11000000'     ;Command 3: set address
+00B4   1085           00202         bcf     GPIO, STB
+00B5   2???           00203         call sendOneByte
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00B6   0828           00204         movf lcdData, 0
+00B7   2???           00205         call sendOneByte
+Message[305]: Using default destination of 1 (file).
+00B8   0AAE           00206         incf digitAddress
+00B9   0829           00207         movf lcdData+1, 0
+00BA   2???           00208         call sendOneByte
+Message[305]: Using default destination of 1 (file).
+00BB   0AAE           00209         incf digitAddress
+00BC   1485           00210         bsf     GPIO, STB
+00BD   0008           00211         return
+                      00212 
+                      00213 ;===============================================================================
+                      00214 ;send command and different data to the dispaly
+                      00215 ;command is locaed in W-register
+                      00216 ;data is located from beginData
+                      00217 ;size of data contains in dataSize
+                      00218 ;===============================================================================
+00BE                  00219 sendDisplayCommand
+00BE   1085           00220         bcf     GPIO, STB
+00BF   2???           00221         call sendOneByte
+00C0   3028           00222         movlw lcdData
+00C1   0084           00223         movwf FSR
+00C2                  00224 sendData
+00C2   0103           00225         clrw
+00C3   0427           00226         iorwf dataSize,0
+00C4   1903           00227         btfsc STATUS,Z
+00C5   2???           00228                 goto endOfSend
+00C6   0800           00229         movf INDF,0
+00C7   2???           00230         call sendOneByte
+Message[305]: Using default destination of 1 (file).
+00C8   0A84           00231         incf FSR
+00C9   03A7           00232         decf dataSize,1
+00CA   2???           00233         goto sendData
+00CB                  00234 endOfSend
+00CB   1485           00235         bsf     GPIO, STB
+00CC   0008           00236         return
+                      00237 
+                      00238 ;===============================================================================
+                      00239 ;send one byte to the dispaly
+                      00240 ;===============================================================================
+00CD                  00241 sendOneByte
+00CD   00AC           00242         movwf byteToSend
+00CE   3008           00243         movlw .8
+00CF   00AD           00244         movwf bitCount
+00D0                  00245 sendBit
+00D0   0CAC           00246         rrf     byteToSend,1
+00D1   1803           00247         btfsc STATUS,C
+00D2   1405           00248          bsf GPIO,DAT
+00D3   1285           00249         bcf GPIO, CLK
+00D4   1685           00250         bsf     GPIO, CLK
+00D5   1005           00251         bcf     GPIO, DAT
+00D6   0BAD           00252         decfsz bitCount,1
+00D7   2???           00253      goto sendBit
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00D8   0008           00254         return
+                      00255 ;===============================================================================
+                      00256 ;send one byte as uart, register W contains data to send. ;
+                      00257 ;Signal pass through UART line.
+                      00258 ;speed: 9600. 1 start bit, 1 stop bit  
+                      00259 ;===============================================================================
+00D9                  00260 sendToUart
+00D9   00AC           00261         movwf byteToSend
+00DA   3008           00262         movlw .8
+00DB   00AD           00263         movwf bitCount
+00DC   1003           00264         bcf     STATUS, C       ;start bit, alway zero
+00DD   2???           00265         call sendOneBit
+00DE                  00266 sendUartBit
+00DE   0CAC           00267         rrf     byteToSend,1
+00DF   2???           00268         call sendOneBit ;data bit
+00E0   0BAD           00269         decfsz bitCount,1
+00E1   2???           00270      goto sendUartBit
+00E2   1403           00271         bsf     STATUS, C
+00E3   2???           00272         call sendOneBit ;stop bit, alway one
+00E4   0008           00273         return
+                      00274 ;===============================================================================
+                      00275 ;send one bit on CLK line with specified delay
+                      00276 ;===============================================================================
+00E5                  00277 sendOneBit
+00E5   3021           00278         movlw 0x21
+00E6   00A2           00279         movwf temp
+00E7   1803           00280         btfsc STATUS,C
+00E8   1505           00281          bsf GPIO, SERIAL
+00E9   1C03           00282         btfss STATUS,C
+00EA   1105           00283          bcf GPIO, SERIAL
+00EB   0BA2           00284         decfsz  temp,1
+00EC   2???           00285          goto $-1
+00ED   0008           00286         return
+                      00287 ;===============================================================================
+                      00288 ;Read IR and blinking subroutine
+                      00289 ;===============================================================================
+00EE                  00290 ReadIrPort
+00EE   1605           00291         bsf             GPIO,GP4        ;Switch on Led
+00EF   0000           00292         nop
+00F0   1D85           00293         btfss   GPIO,IRPORT
+00F1   2???           00294                 goto $-2
+00F2   3003           00295         movlw   .3
+00F3   1205           00296         bcf             GPIO,GP4        ;Switch ooff Led
+00F4   3005           00297         movlw   .5
+00F5   2???           00298         call    Delay
+00F6   0008           00299         return
+                      00300 
+                      00301 ;==============================================
+                      00302 ; Clear  IR data
+                      00303 ;==============================================
+00F7                  00304 clearIrData
+00F7   3031           00305         movlw irData
+00F8   0084           00306         movwf FSR
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00F9                  00307 nextCleari
+00F9   0180           00308         clrf INDF
+00FA   0A84           00309         incf  FSR,1
+00FB   0804           00310         movf  FSR,0
+00FC   3A51           00311         xorlw  irData+20
+00FD   1D03           00312         btfss   STATUS,Z
+00FE   2???           00313           goto  nextCleari
+00FF   0008           00314         return
+                      00315 
+                      00316 
+                      00317 ;===============================================================================
+                      00318 ;Read IR and blinking subroutine
+                      00319 ;===============================================================================
+0100                  00320 ReverseIrPort
+0100   2???           00321         call    clearIrData
+0101   1605           00322         bsf             GPIO,GP4        ;Switch on Led
+0102   300A           00323         movlw .10
+0103   00A7           00324         movwf dataSize
+0104   3031           00325         movlw irData
+0105   0084           00326         movwf FSR
+0106   1D85           00327         btfss   GPIO,IRPORT  ;wait for first Hi  signal
+0107   2???           00328           goto $-1
+0108   1205           00329         bcf             GPIO,GP4        ;Switch on Led
+0109                  00330 calcOn
+0109   01A0           00331         clrf blinkCount
+010A   01A2           00332         clrf temp
+010B   1D85           00333         btfss   GPIO,IRPORT  ;check for following Low signal
+010C   2???           00334           goto calcOff
+010D   0AA0           00335         incf blinkCount,1       ; increment on time
+010E   1903           00336         btfsc   STATUS,Z        ; if overload  then  this is timeout
+010F   2???           00337           goto endTransmition
+0110   2???           00338         goto calcOn
+0111                  00339 calcOff
+0111   1985           00340         btfsc   GPIO,IRPORT  ;check for following Hi signal
+0112   2???           00341           goto endTransmition
+0113   0AA2           00342         incf temp,1                     ; increment off time
+0114   1903           00343         btfsc   STATUS,Z        ; if overload  then  this is timeout
+0115   2???           00344           goto endTransmition
+0116   2???           00345         goto    calcOff
+0117                  00346 endTransmition
+                      00347         ;store data
+0117   0820           00348         movf  blinkCount,0
+0118   0080           00349         movwf INDF
+0119   0A84           00350         incf FSR,1
+011A   0822           00351         movf  temp,0
+011B   0080           00352         movwf INDF
+011C   0A84           00353         incf FSR,1
+                      00354         ;check for stop parsing
+011D   03A7           00355         decf dataSize,1
+011E   1903           00356         btfsc STATUS,Z
+011F   0008           00357          return
+0120   08A2           00358         movf temp,1
+0121   1903           00359         btfsc STATUS, Z
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0122   0008           00360          return
+0123   08A0           00361         movf blinkCount,1
+0124   1903           00362         btfsc STATUS, Z
+0125   0008           00363          return
+0126   2???           00364         goto calcOn
+                      00365         
+                      00366 
+                      00367 ;===============================================================================
+                      00368 ;delay subroutine
+                      00369 ;===============================================================================
+0127                  00370 Delay
+0127   00A3           00371         movwf Delay50MsCounter
+0128   2???           00372         call Delay50Ms
+0129   0BA3           00373         decfsz Delay50MsCounter,1
+012A   2???           00374          goto $-2
+012B   0008           00375         return
+                      00376 
+012C                  00377 Delay50Ms
+012C   301B           00378         movlw 0x1b
+012D   00A4           00379         movwf DelayOutCounter
+012E                  00380 loop1
+012E   30E7           00381         movlw 0xe7
+012F   00A5           00382         movwf DelayInCounter
+0130                  00383 loop2
+0130   0000           00384         nop
+0131   0000           00385         nop
+0132   0000           00386         nop
+0133   0000           00387         nop
+0134   0000           00388         nop
+0135   0BA5           00389         decfsz DelayInCounter,1
+0136   2???           00390          goto loop2
+0137   0BA4           00391         decfsz DelayOutCounter,1
+0138   2???           00392          goto loop1
+0139   0008           00393         return
+                      00394 
+                      00395 ;===============================================================================
+                      00396 ; Main programm. cycle, invoking  previous defined procedures
+                      00397 ;===============================================================================
+013A                  00398 Start
+013A                  00399 Configure
+                      00400         ;calibrate internal oscillator
+013A   1683           00401         bsf             STATUS, RP0 ;Bank 1
+013B   23FF           00402         call    0x3FF           ;Get the cal value
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+013C   0090           00403         movwf   OSCCAL          ;Calibrate
+                      00404     ;configure GP2 as IO led driver
+013D   1283           00405         bcf     STATUS,RP0  ;Bank 0
+013E   0185           00406         clrf    GPIO        ;Init GPIO
+013F   3007           00407         movlw   0x07        ;Set GP<2:0> to
+0140   0099           00408         movwf   CMCON       ;digital IO
+0141   1683           00409     bsf     STATUS,RP0  ;Bank 1
+0142   30C8           00410     movlw       b'11001000'             ;Set only GP0,GP1,GP2,GP5,GP4 as output, all other is input.
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0143   0085           00411     movwf       TRISIO
+0144   1283           00412         bcf             STATUS,RP0  ;Bank 0
+0145   1485           00413         bsf             GPIO,STB
+0146   1005           00414         bcf             GPIO,DAT
+0147   1685           00415         bsf             GPIO,CLK        
+0148   1505           00416         bsf             GPIO,SERIAL     ;init uart line
+                      00417 ;Introduction with blinking of red and green led order by order
+                      00418         ;call   IntroBlinking
+                      00419         ;call   InitDisplay
+0149   01A0           00420         clrf    blinkCount
+014A                  00421 workingLoop
+014A   300D           00422         movlw   '\r'
+014B   2???           00423         call    sendToUart
+014C   300A           00424         movlw   '\n'
+014D   2???           00425         call    sendToUart
+014E   2???           00426         call    ReverseIrPort
+014F   3043           00427         movlw   'C'
+0150   2???           00428         call    sendToUart
+0151   0827           00429         movf    dataSize, 0
+0152   3C0A           00430         sublw   .10
+0153   00A7           00431         movwf   dataSize
+0154   2???           00432         call    printHexOnUart
+0155   300D           00433         movlw   '\r'
+0156   2???           00434         call    sendToUart
+0157   300A           00435         movlw   '\n'
+0158   2???           00436         call    sendToUart
+                      00437         ;-------------print data
+0159   3031           00438         movlw irData
+015A   0084           00439         movwf FSR
+015B                  00440 nextValue
+015B   3048           00441         movlw   'H'
+015C   2???           00442         call    sendToUart
+015D   0800           00443         movf  INDF,0
+015E   2???           00444         call    printHexOnUart
+015F   0A84           00445         incf  FSR,1
+0160   3020           00446         movlw   ' '
+0161   2???           00447         call    sendToUart
+0162   304C           00448         movlw   'L'
+0163   2???           00449         call    sendToUart
+0164   0800           00450         movf  INDF,0
+0165   2???           00451         call    printHexOnUart
+0166   0A84           00452         incf  FSR,1
+0167   300D           00453         movlw   '\r'
+0168   2???           00454         call    sendToUart
+0169   300A           00455         movlw   '\n'
+016A   2???           00456         call    sendToUart
+016B   03A7           00457         decf    dataSize,1
+016C   1D03           00458         btfss   STATUS,Z
+016D   2???           00459           goto  nextValue
+                      00460 
+016E   3028           00461         movlw .40
+016F   2???           00462         call  Delay
+0170   2???           00463         goto    workingLoop
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00464 
+0171                  00465 printHexOnUart
+0171   2???           00466         call    valueToAsciiHex
+0172   082F           00467         movf    firstDigit, 0
+0173   2???           00468         call    sendToUart
+0174   0830           00469         movf    secondDigit, 0
+0175   2???           00470         call    sendToUart
+0176   0008           00471         return
+                      00472         ;call   ReadIrPort
+                      00473         ;incf   blinkCount,1
+                      00474         ;movfw  blinkCount
+                      00475         ;call   printHexOnLcd
+                      00476 
+                      00477         ;movfw  blinkCount
+                      00478         ;call   valueToAsciiHex
+                      00479         ;movf   firstDigit, 0
+                      00480         ;call   sendToUart
+                      00481         ;movf   secondDigit, 0
+                      00482         ;call   sendToUart
+                      00483         ;movlw  0x20
+                      00484         ;call   sendToUart
+                      00485 
+                      00486         org     0x3ff
+03FF   3430           00487         dw 0x3430
+3FD4                  00488         end
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADIE                              00000006
+ADIF                              00000006
+C                                 00000000
+CAL0                              00000002
+CAL1                              00000003
+CAL2                              00000004
+CAL3                              00000005
+CAL4                              00000006
+CAL5                              00000007
+CINV                              00000004
+CIS                               00000003
+CLK                               00000005
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             00000019
+CMIE                              00000003
+CMIF                              00000003
+COUT                              00000006
+Configure                         0000013A
+DAT                               00000000
+DC                                00000001
+DIGIT0                            00000028
+DIGIT1                            0000002A
+DIGIT2                            0000002C
+DIGIT3                            0000002E
+DIGIT4                            00000030
+DIGIT5                            00000032
+DIGIT6                            00000034
+Delay                             00000127
+Delay50Ms                         0000012C
+Delay50MsCounter                  00000023
+DelayInCounter                    00000025
+DelayOutCounter                   00000024
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDAT                             0000009A
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+GP0                               00000000
+GP1                               00000001
+GP2                               00000002
+GP3                               00000003
+GP4                               00000004
+GP5                               00000005
+GPIE                              00000003
+GPIF                              00000000
+GPIO                              00000005
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+GPIO0                             00000000
+GPIO1                             00000001
+GPIO2                             00000002
+GPIO3                             00000003
+GPIO4                             00000004
+GPIO5                             00000005
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IOC                               00000096
+IOC0                              00000000
+IOC1                              00000001
+IOC2                              00000002
+IOC3                              00000003
+IOC4                              00000004
+IOC5                              00000005
+IOCB                              00000096
+IOCB0                             00000000
+IOCB1                             00000001
+IOCB2                             00000002
+IOCB3                             00000003
+IOCB4                             00000004
+IOCB5                             00000005
+IRP                               00000007
+IRPORT                            00000003
+InitDisplay                       0000008D
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_GPPU                          00000007
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OPTION_REG                        00000081
+OSCCAL                            00000090
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+ReadIrPort                        000000EE
+ReverseIrPort                     00000100
+SERIAL                            00000002
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 13
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+STATUS                            00000003
+STB                               00000001
+Start                             0000013A
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1IE                              00000000
+T1IF                              00000000
+T1OSCEN                           00000003
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1GE                            00000006
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TRISIO                            00000085
+TRISIO0                           00000000
+TRISIO1                           00000001
+TRISIO2                           00000002
+TRISIO3                           00000003
+TRISIO4                           00000004
+TRISIO5                           00000005
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             00000099
+VREN                              00000007
+VRR                               00000005
+W                                 00000000
+WPU                               00000095
+WPU0                              00000000
+WPU1                              00000001
+WPU2                              00000002
+WPU4                              00000004
+WPU5                              00000005
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_.org_1_00EC                      000000EC
+_.org_1_00F1                      000000F1
+_.org_1_0107                      00000107
+_.org_1_012A                      0000012A
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00003F7F
+_DEVID1                           00002006
+_EC_OSC                           00003FFB
+_EXTRC_OSC_CLKOUT                 00003FFF
+_EXTRC_OSC_NOCLKOUT               00003FFE
+_FOSC_EC                          00003FFB
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FFA
+_FOSC_INTRCCLK                    00003FFD
+_FOSC_INTRCIO                     00003FFC
+_FOSC_LP                          00003FF8
+_FOSC_XT                          00003FF9
+_HS_OSC                           00003FFA
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FF8
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FEF
+_WDTE_OFF                         00003FF7
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FF7
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FF9
+__12F629                          00000001
+bitCount                          0000002D
+blinkCount                        00000020
+byteToSend                        0000002C
+calcOff                           00000111
+calcOn                            00000109
+clearDisplay                      0000009B
+clearIrData                       000000F7
+clearLcdData                      00000084
+command                           00000026
+dataSize                          00000027
+delayCounter                      00000021
+digitAddress                      0000002E
+endOfSend                         000000CB
+endTransmition                    00000117
+MPASM 5.53                      RECEIVER.ASM   1-3-2014  2:59:47         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+firstDigit                        0000002F
+getAsciiCode                      00000061
+getSymCode                        00000050
+irData                            00000031
+lcdData                           00000028
+loop1                             0000012E
+loop2                             00000130
+nextClear                         00000086
+nextCleari                        000000F9
+nextValue                         0000015B
+offCounterHi                      00000054
+offCounterLow                     00000053
+onCounterHi                       00000052
+onCounterLow                      00000051
+printHexOnLcd                     000000A7
+printHexOnUart                    00000171
+secondDigit                       00000030
+sendBit                           000000D0
+sendData                          000000C2
+sendData0                         000000A0
+sendDataToDisplay                 000000B2
+sendDisplayCommand                000000BE
+sendOneBit                        000000E5
+sendOneByte                       000000CD
+sendToUart                        000000D9
+sendUartBit                       000000DE
+temp                              00000022
+valueToAsciiHex                   0000007B
+valueToHex                        00000072
+workingLoop                       0000014A
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     5 reported,     0 suppressed
+
+

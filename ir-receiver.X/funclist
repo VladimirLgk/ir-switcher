@@ -1,0 +1,13 @@
+_configure: CODE, 660 0 12
+_readData: CODE, 948 0 75
+_lcd_puts: CODE, 753 0 23
+_lcd_cmd: CODE, 654 0 6
+_readIrSensor: CODE, 730 0 23
+_readMark: CODE, 838 0 37
+_main: CODE, 875 0 73
+_getIrData: CODE, 806 0 32
+_lcd_clear: CODE, 672 0 17
+_to7hex: CODE, 776 0 30
+_lcd_write: CODE, 689 0 19
+_lcd_init: CODE, 708 0 22
+Total: 369

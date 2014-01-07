@@ -1,0 +1,114 @@
+MPLINK 4.51, LINKER
+Linker Map File - Created Fri Jan 03 02:34:40 2014
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000002
+                   .cinit    romdata   0x000001    program   0x000004
+                   .org_1       code   0x000050    program   0x00023e
+                   .org_2       code   0x0003ff    program   0x000002
+.config_2007_BUILD/DEFAULT/DEBUG/RECEIVER.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000002      
+                            0x000050    0x00016e      
+                            0x0003ff    0x0003ff      
+                            0x002007    0x002007      
+            292 out of 1158 program addresses used, program memory utilization is 25%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                Configure   0x000139    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    Delay   0x000126    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                Delay50Ms   0x00012b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              InitDisplay   0x00008d    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               ReadIrPort   0x0000ee    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+            ReverseIrPort   0x000100    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    Start   0x000139    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_00EC   0x0000ec    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_00F1   0x0000f1    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_0107   0x000107    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_0129   0x000129    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                  calcOff   0x000110    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                   calcOn   0x000108    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             clearDisplay   0x00009b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              clearIrData   0x0000f7    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             clearLcdData   0x000084    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                endOfSend   0x0000cb    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+           endTransmition   0x000116    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             getAsciiCode   0x000061    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               getSymCode   0x000050    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    loop1   0x00012d    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    loop2   0x00012f    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                nextClear   0x000086    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               nextCleari   0x0000f9    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                nextValue   0x000157    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+            printHexOnLcd   0x0000a7    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+           printHexOnUart   0x000169    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                  sendBit   0x0000d0    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                 sendData   0x0000c2    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                sendData0   0x0000a0    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+        sendDataToDisplay   0x0000b2    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+       sendDisplayCommand   0x0000be    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               sendOneBit   0x0000e5    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              sendOneByte   0x0000cd    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               sendToUart   0x0000d9    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              sendUartBit   0x0000de    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+          valueToAsciiHex   0x00007b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               valueToHex   0x000072    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              workingLoop   0x00014a    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+               getSymCode   0x000050    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             getAsciiCode   0x000061    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               valueToHex   0x000072    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+          valueToAsciiHex   0x00007b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             clearLcdData   0x000084    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                nextClear   0x000086    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              InitDisplay   0x00008d    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             clearDisplay   0x00009b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                sendData0   0x0000a0    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+            printHexOnLcd   0x0000a7    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+        sendDataToDisplay   0x0000b2    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+       sendDisplayCommand   0x0000be    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                 sendData   0x0000c2    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                endOfSend   0x0000cb    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              sendOneByte   0x0000cd    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                  sendBit   0x0000d0    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               sendToUart   0x0000d9    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              sendUartBit   0x0000de    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               sendOneBit   0x0000e5    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_00EC   0x0000ec    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               ReadIrPort   0x0000ee    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_00F1   0x0000f1    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              clearIrData   0x0000f7    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+               nextCleari   0x0000f9    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+            ReverseIrPort   0x000100    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_0107   0x000107    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                   calcOn   0x000108    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                  calcOff   0x000110    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+           endTransmition   0x000116    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    Delay   0x000126    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+             _.org_1_0129   0x000129    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                Delay50Ms   0x00012b    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    loop1   0x00012d    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    loop2   0x00012f    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                    Start   0x000139    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                Configure   0x000139    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+              workingLoop   0x00014a    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+                nextValue   0x000157    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+           printHexOnUart   0x000169    program     static D:\Vladimir Legky\development\irpair\receiver.X\receiver.asm
+
+

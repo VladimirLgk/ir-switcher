@@ -1,0 +1,775 @@
+
+# 1 "main.c"
+
+# 9 "C:\Program Files\HI-TECH Software\PICC\9.83\include\pic.h"
+extern unsigned char __osccal_val(void);
+
+# 76 "C:\Program Files\HI-TECH Software\PICC\9.83\include\pic12f629.h"
+volatile unsigned char INDF @ 0x000;
+
+
+
+volatile unsigned char TMR0 @ 0x001;
+
+
+
+volatile unsigned char PCL @ 0x002;
+
+
+
+volatile unsigned char STATUS @ 0x003;
+
+volatile bit CARRY @ ((unsigned)&STATUS*8)+0;
+volatile bit DC @ ((unsigned)&STATUS*8)+1;
+volatile bit ZERO @ ((unsigned)&STATUS*8)+2;
+volatile bit nPD @ ((unsigned)&STATUS*8)+3;
+volatile bit nTO @ ((unsigned)&STATUS*8)+4;
+volatile bit IRP @ ((unsigned)&STATUS*8)+7;
+volatile bit RP0 @ ((unsigned)&STATUS*8)+5;
+volatile bit RP1 @ ((unsigned)&STATUS*8)+6;
+
+volatile union {
+struct {
+unsigned C : 1;
+unsigned DC : 1;
+unsigned Z : 1;
+unsigned nPD : 1;
+unsigned nTO : 1;
+unsigned RP : 2;
+unsigned IRP : 1;
+};
+struct {
+unsigned : 5;
+unsigned RP0 : 1;
+unsigned RP1 : 1;
+};
+} STATUSbits @ 0x003;
+
+
+
+volatile unsigned char FSR @ 0x004;
+
+
+
+volatile unsigned char GPIO @ 0x005;
+
+volatile bit GP0 @ ((unsigned)&GPIO*8)+0;
+volatile bit GP1 @ ((unsigned)&GPIO*8)+1;
+volatile bit GP2 @ ((unsigned)&GPIO*8)+2;
+volatile bit GP3 @ ((unsigned)&GPIO*8)+3;
+volatile bit GP4 @ ((unsigned)&GPIO*8)+4;
+volatile bit GP5 @ ((unsigned)&GPIO*8)+5;
+volatile bit GPIO0 @ ((unsigned)&GPIO*8)+0;
+volatile bit GPIO1 @ ((unsigned)&GPIO*8)+1;
+volatile bit GPIO2 @ ((unsigned)&GPIO*8)+2;
+volatile bit GPIO3 @ ((unsigned)&GPIO*8)+3;
+volatile bit GPIO4 @ ((unsigned)&GPIO*8)+4;
+volatile bit GPIO5 @ ((unsigned)&GPIO*8)+5;
+
+volatile union {
+struct {
+unsigned GP0 : 1;
+unsigned GP1 : 1;
+unsigned GP2 : 1;
+unsigned GP3 : 1;
+unsigned GP4 : 1;
+unsigned GP5 : 1;
+};
+struct {
+unsigned GPIO0 : 1;
+unsigned GPIO1 : 1;
+unsigned GPIO2 : 1;
+unsigned GPIO3 : 1;
+unsigned GPIO4 : 1;
+unsigned GPIO5 : 1;
+};
+} GPIObits @ 0x005;
+
+
+
+volatile unsigned char PCLATH @ 0x00A;
+
+
+volatile union {
+struct {
+unsigned PCLATH : 5;
+};
+} PCLATHbits @ 0x00A;
+
+
+
+volatile unsigned char INTCON @ 0x00B;
+
+volatile bit GPIF @ ((unsigned)&INTCON*8)+0;
+volatile bit INTF @ ((unsigned)&INTCON*8)+1;
+volatile bit T0IF @ ((unsigned)&INTCON*8)+2;
+volatile bit GPIE @ ((unsigned)&INTCON*8)+3;
+volatile bit INTE @ ((unsigned)&INTCON*8)+4;
+volatile bit T0IE @ ((unsigned)&INTCON*8)+5;
+volatile bit PEIE @ ((unsigned)&INTCON*8)+6;
+volatile bit GIE @ ((unsigned)&INTCON*8)+7;
+volatile bit TMR0IF @ ((unsigned)&INTCON*8)+2;
+volatile bit TMR0IE @ ((unsigned)&INTCON*8)+5;
+
+volatile union {
+struct {
+unsigned GPIF : 1;
+unsigned INTF : 1;
+unsigned T0IF : 1;
+unsigned GPIE : 1;
+unsigned INTE : 1;
+unsigned T0IE : 1;
+unsigned PEIE : 1;
+unsigned GIE : 1;
+};
+struct {
+unsigned : 2;
+unsigned TMR0IF : 1;
+unsigned : 2;
+unsigned TMR0IE : 1;
+};
+} INTCONbits @ 0x00B;
+
+
+
+volatile unsigned char PIR1 @ 0x00C;
+
+volatile bit TMR1IF @ ((unsigned)&PIR1*8)+0;
+volatile bit CMIF @ ((unsigned)&PIR1*8)+3;
+volatile bit ADIF @ ((unsigned)&PIR1*8)+6;
+volatile bit EEIF @ ((unsigned)&PIR1*8)+7;
+volatile bit T1IF @ ((unsigned)&PIR1*8)+0;
+
+volatile union {
+struct {
+unsigned TMR1IF : 1;
+unsigned : 2;
+unsigned CMIF : 1;
+unsigned : 2;
+unsigned ADIF : 1;
+unsigned EEIF : 1;
+};
+struct {
+unsigned T1IF : 1;
+};
+} PIR1bits @ 0x00C;
+
+
+
+
+volatile unsigned char TMR1L @ 0x00E;
+
+
+
+volatile unsigned char TMR1H @ 0x00F;
+
+
+
+volatile unsigned int TMR1 @ 0x00E;
+
+
+volatile unsigned char T1CON @ 0x010;
+
+volatile bit TMR1ON @ ((unsigned)&T1CON*8)+0;
+volatile bit TMR1CS @ ((unsigned)&T1CON*8)+1;
+volatile bit nT1SYNC @ ((unsigned)&T1CON*8)+2;
+volatile bit T1OSCEN @ ((unsigned)&T1CON*8)+3;
+volatile bit TMR1GE @ ((unsigned)&T1CON*8)+6;
+volatile bit T1CKPS0 @ ((unsigned)&T1CON*8)+4;
+volatile bit T1CKPS1 @ ((unsigned)&T1CON*8)+5;
+
+volatile union {
+struct {
+unsigned TMR1ON : 1;
+unsigned TMR1CS : 1;
+unsigned nT1SYNC : 1;
+unsigned T1OSCEN : 1;
+unsigned T1CKPS : 2;
+unsigned TMR1GE : 1;
+};
+struct {
+unsigned : 4;
+unsigned T1CKPS0 : 1;
+unsigned T1CKPS1 : 1;
+};
+} T1CONbits @ 0x010;
+
+
+
+volatile unsigned char CMCON @ 0x019;
+
+volatile bit CIS @ ((unsigned)&CMCON*8)+3;
+volatile bit CINV @ ((unsigned)&CMCON*8)+4;
+volatile bit COUT @ ((unsigned)&CMCON*8)+6;
+volatile bit CM0 @ ((unsigned)&CMCON*8)+0;
+volatile bit CM1 @ ((unsigned)&CMCON*8)+1;
+volatile bit CM2 @ ((unsigned)&CMCON*8)+2;
+
+volatile union {
+struct {
+unsigned CM : 3;
+unsigned CIS : 1;
+unsigned CINV : 1;
+unsigned : 1;
+unsigned COUT : 1;
+};
+struct {
+unsigned CM0 : 1;
+unsigned CM1 : 1;
+unsigned CM2 : 1;
+};
+} CMCONbits @ 0x019;
+
+# 298
+volatile unsigned char OPTION_REG @ 0x081;
+
+volatile bit PSA @ ((unsigned)&OPTION_REG*8)+3;
+volatile bit T0SE @ ((unsigned)&OPTION_REG*8)+4;
+volatile bit T0CS @ ((unsigned)&OPTION_REG*8)+5;
+volatile bit INTEDG @ ((unsigned)&OPTION_REG*8)+6;
+volatile bit nGPPU @ ((unsigned)&OPTION_REG*8)+7;
+volatile bit PS0 @ ((unsigned)&OPTION_REG*8)+0;
+volatile bit PS1 @ ((unsigned)&OPTION_REG*8)+1;
+volatile bit PS2 @ ((unsigned)&OPTION_REG*8)+2;
+
+volatile union {
+struct {
+unsigned PS : 3;
+unsigned PSA : 1;
+unsigned T0SE : 1;
+unsigned T0CS : 1;
+unsigned INTEDG : 1;
+unsigned nGPPU : 1;
+};
+struct {
+unsigned PS0 : 1;
+unsigned PS1 : 1;
+unsigned PS2 : 1;
+};
+} OPTION_REGbits @ 0x081;
+
+
+
+volatile unsigned char TRISIO @ 0x085;
+
+volatile bit TRISIO0 @ ((unsigned)&TRISIO*8)+0;
+volatile bit TRISIO1 @ ((unsigned)&TRISIO*8)+1;
+volatile bit TRISIO2 @ ((unsigned)&TRISIO*8)+2;
+volatile bit TRISIO3 @ ((unsigned)&TRISIO*8)+3;
+volatile bit TRISIO4 @ ((unsigned)&TRISIO*8)+4;
+volatile bit TRISIO5 @ ((unsigned)&TRISIO*8)+5;
+
+volatile union {
+struct {
+unsigned TRISIO0 : 1;
+unsigned TRISIO1 : 1;
+unsigned TRISIO2 : 1;
+unsigned TRISIO3 : 1;
+unsigned TRISIO4 : 1;
+unsigned TRISIO5 : 1;
+};
+} TRISIObits @ 0x085;
+
+
+
+volatile unsigned char PIE1 @ 0x08C;
+
+volatile bit TMR1IE @ ((unsigned)&PIE1*8)+0;
+volatile bit CMIE @ ((unsigned)&PIE1*8)+3;
+volatile bit ADIE @ ((unsigned)&PIE1*8)+6;
+volatile bit EEIE @ ((unsigned)&PIE1*8)+7;
+volatile bit T1IE @ ((unsigned)&PIE1*8)+0;
+
+volatile union {
+struct {
+unsigned TMR1IE : 1;
+unsigned : 2;
+unsigned CMIE : 1;
+unsigned : 2;
+unsigned ADIE : 1;
+unsigned EEIE : 1;
+};
+struct {
+unsigned T1IE : 1;
+};
+} PIE1bits @ 0x08C;
+
+
+
+volatile unsigned char PCON @ 0x08E;
+
+volatile bit nBOR @ ((unsigned)&PCON*8)+0;
+volatile bit nPOR @ ((unsigned)&PCON*8)+1;
+volatile bit nBOD @ ((unsigned)&PCON*8)+0;
+
+volatile union {
+struct {
+unsigned nBOR : 1;
+unsigned nPOR : 1;
+};
+struct {
+unsigned nBOD : 1;
+};
+} PCONbits @ 0x08E;
+
+
+
+volatile unsigned char OSCCAL @ 0x090;
+
+volatile bit CAL0 @ ((unsigned)&OSCCAL*8)+2;
+volatile bit CAL1 @ ((unsigned)&OSCCAL*8)+3;
+volatile bit CAL2 @ ((unsigned)&OSCCAL*8)+4;
+volatile bit CAL3 @ ((unsigned)&OSCCAL*8)+5;
+volatile bit CAL4 @ ((unsigned)&OSCCAL*8)+6;
+volatile bit CAL5 @ ((unsigned)&OSCCAL*8)+7;
+
+volatile union {
+struct {
+unsigned : 2;
+unsigned CAL : 6;
+};
+struct {
+unsigned : 2;
+unsigned CAL0 : 1;
+unsigned CAL1 : 1;
+unsigned CAL2 : 1;
+unsigned CAL3 : 1;
+unsigned CAL4 : 1;
+unsigned CAL5 : 1;
+};
+} OSCCALbits @ 0x090;
+
+
+
+volatile unsigned char WPU @ 0x095;
+
+volatile bit WPU0 @ ((unsigned)&WPU*8)+0;
+volatile bit WPU1 @ ((unsigned)&WPU*8)+1;
+volatile bit WPU2 @ ((unsigned)&WPU*8)+2;
+volatile bit WPU4 @ ((unsigned)&WPU*8)+4;
+volatile bit WPU5 @ ((unsigned)&WPU*8)+5;
+
+volatile union {
+struct {
+unsigned WPU0 : 1;
+unsigned WPU1 : 1;
+unsigned WPU2 : 1;
+unsigned : 1;
+unsigned WPU4 : 1;
+unsigned WPU5 : 1;
+};
+} WPUbits @ 0x095;
+
+
+
+volatile unsigned char IOC @ 0x096;
+volatile unsigned char IOCB @ 0x096;
+
+volatile bit IOC0 @ ((unsigned)&IOC*8)+0;
+volatile bit IOC1 @ ((unsigned)&IOC*8)+1;
+volatile bit IOC2 @ ((unsigned)&IOC*8)+2;
+volatile bit IOC3 @ ((unsigned)&IOC*8)+3;
+volatile bit IOC4 @ ((unsigned)&IOC*8)+4;
+volatile bit IOC5 @ ((unsigned)&IOC*8)+5;
+volatile bit IOCB0 @ ((unsigned)&IOC*8)+0;
+volatile bit IOCB1 @ ((unsigned)&IOC*8)+1;
+volatile bit IOCB2 @ ((unsigned)&IOC*8)+2;
+volatile bit IOCB3 @ ((unsigned)&IOC*8)+3;
+volatile bit IOCB4 @ ((unsigned)&IOC*8)+4;
+volatile bit IOCB5 @ ((unsigned)&IOC*8)+5;
+
+volatile union {
+struct {
+unsigned IOC0 : 1;
+unsigned IOC1 : 1;
+unsigned IOC2 : 1;
+unsigned IOC3 : 1;
+unsigned IOC4 : 1;
+unsigned IOC5 : 1;
+};
+struct {
+unsigned IOCB0 : 1;
+unsigned IOCB1 : 1;
+unsigned IOCB2 : 1;
+unsigned IOCB3 : 1;
+unsigned IOCB4 : 1;
+unsigned IOCB5 : 1;
+};
+} IOCbits @ 0x096;
+
+
+
+volatile unsigned char VRCON @ 0x099;
+
+volatile bit VRR @ ((unsigned)&VRCON*8)+5;
+volatile bit VREN @ ((unsigned)&VRCON*8)+7;
+volatile bit VR0 @ ((unsigned)&VRCON*8)+0;
+volatile bit VR1 @ ((unsigned)&VRCON*8)+1;
+volatile bit VR2 @ ((unsigned)&VRCON*8)+2;
+volatile bit VR3 @ ((unsigned)&VRCON*8)+3;
+
+volatile union {
+struct {
+unsigned VR : 4;
+unsigned : 1;
+unsigned VRR : 1;
+unsigned : 1;
+unsigned VREN : 1;
+};
+struct {
+unsigned VR0 : 1;
+unsigned VR1 : 1;
+unsigned VR2 : 1;
+unsigned VR3 : 1;
+};
+} VRCONbits @ 0x099;
+
+
+
+volatile unsigned char EEDATA @ 0x09A;
+volatile unsigned char EEDAT @ 0x09A;
+
+
+
+volatile unsigned char EEADR @ 0x09B;
+
+
+volatile union {
+struct {
+unsigned EEADR : 7;
+};
+} EEADRbits @ 0x09B;
+
+
+
+volatile unsigned char EECON1 @ 0x09C;
+
+volatile bit RD @ ((unsigned)&EECON1*8)+0;
+volatile bit WR @ ((unsigned)&EECON1*8)+1;
+volatile bit WREN @ ((unsigned)&EECON1*8)+2;
+volatile bit WRERR @ ((unsigned)&EECON1*8)+3;
+
+volatile union {
+struct {
+unsigned RD : 1;
+unsigned WR : 1;
+unsigned WREN : 1;
+unsigned WRERR : 1;
+};
+} EECON1bits @ 0x09C;
+
+
+
+volatile unsigned char EECON2 @ 0x09D;
+
+
+# 27 "C:\Program Files\HI-TECH Software\PICC\9.83\include\pic.h"
+#pragma inline(_nop)
+extern void _nop(void);
+
+# 80
+extern unsigned int flash_read(unsigned short addr);
+
+# 144
+extern void flash_erase(unsigned short addr);
+
+# 41 "C:\Program Files\HI-TECH Software\PICC\9.83\include\eeprom_routines.h"
+extern unsigned char eeprom_write(unsigned char addr, unsigned char value);
+extern unsigned char eeprom_read(unsigned char addr);
+extern void eecpymem(volatile unsigned char *to, eeprom unsigned char *from, unsigned char size);
+extern void memcpyee(eeprom unsigned char *to, const unsigned char *from, unsigned char size);
+
+
+# 153 "C:\Program Files\HI-TECH Software\PICC\9.83\include\pic.h"
+#pragma inline(_delay)
+extern void _delay(unsigned long);
+
+# 12 "C:\Program Files\HI-TECH Software\PICC\9.83\include\stdio.h"
+typedef int ptrdiff_t;
+typedef unsigned size_t;
+typedef unsigned short wchar_t;
+
+# 31 "C:\Program Files\HI-TECH Software\PICC\9.83\include\stdarg.h"
+typedef void * va_list[1];
+
+#pragma inline(__va_start)
+extern void * __va_start(void);
+
+#pragma inline(__va_arg)
+extern void * __va_arg(void *, ...);
+
+# 27 "C:\Program Files\HI-TECH Software\PICC\9.83\include\stdio.h"
+extern int errno;
+
+# 58
+struct __prbuf
+{
+char * ptr;
+void (* func)(char);
+};
+
+# 17 "C:\Program Files\HI-TECH Software\PICC\9.83\include\conio.h"
+extern int errno;
+
+
+extern void init_uart(void);
+
+extern char getch(void);
+extern char getche(void);
+extern void putch(char);
+extern void ungetch(char);
+
+extern bit kbhit(void);
+
+# 31
+extern char * cgets(char *);
+extern void cputs(const char *);
+
+# 103 "C:\Program Files\HI-TECH Software\PICC\9.83\include\stdio.h"
+extern int cprintf(char *, ...);
+#pragma printf_check(cprintf)
+
+
+
+extern int _doprnt(struct __prbuf *, const register char *, register va_list);
+
+# 195
+extern char * gets(char *);
+extern int puts(const char *);
+extern int scanf(const char *, ...);
+extern int sscanf(const char *, const char *, ...);
+extern int vprintf(const char *, va_list);
+extern int vsprintf(char *, const char *, va_list);
+extern int vscanf(const char *, va_list ap);
+extern int vsscanf(const char *, const char *, va_list);
+
+#pragma printf_check(printf) const
+#pragma printf_check(sprintf) const
+extern int sprintf(char *, const char *, ...);
+extern int printf(const char *, ...);
+
+# 24 "main.c"
+asm("\tpsect config,class=CONFIG,delta=2"); asm("\tdw ""0x31FC & 0x31FF & 0x31F7 & 0x31FF & 0x31FF & 0x31DF");
+
+
+const unsigned char osccallibrate @ 0x3FF = 0x30;
+
+# 37
+unsigned char error;
+
+# 144
+void putch(unsigned char ch)
+{
+unsigned char bit_count = 8;
+GPIO2 = 0;
+_delay((unsigned long)((98)*(4000000/4000000.0)));
+while(bit_count)
+{
+if((ch & 0x01))
+GPIO2 = 1;
+else
+GPIO2 = 0;
+ch = ch >> 1;
+bit_count--;
+_delay((unsigned long)((98)*(4000000/4000000.0)));
+}
+GPIO2 = 1;
+_delay((unsigned long)((98)*(4000000/4000000.0)));
+}
+
+void printInt(unsigned int data)
+{
+unsigned int div = 1000;
+while(div)
+{
+unsigned char val = 0;
+if(data >= div)
+val = data/div;
+
+putch(val+0x30);
+data = data%div;
+div = div/10;
+}
+}
+
+# 214
+void configure(void)
+{
+
+
+GPIO = 0;
+CMCON = 0x07;
+TRISIO = 0b11001000;
+
+
+GPIO1 = 1;
+GPIO0 = 0;
+GPIO5 = 1;
+GPIO2 = 1;
+}
+
+unsigned char readIrSensor()
+{
+unsigned char l=2;
+unsigned char port = GPIO3;
+do
+{
+
+if( GPIO3 != port)
+port = GPIO3;
+else
+l--;
+}
+while(l);
+return port;
+}
+
+unsigned char readMark()
+{
+
+unsigned char count = 0;
+while(readIrSensor() == 1)
+count++;
+
+if(count < 190 || count > 220)
+{
+
+return 1;
+}
+
+count = 0;
+
+while(readIrSensor() == 0)
+count++;
+
+if(count < 90 || count > 115)
+{
+
+return 2;
+}
+return 0;
+}
+
+unsigned char readData(unsigned char * irdata, unsigned char size)
+{
+unsigned char value = 0;
+unsigned char count = 0;
+unsigned char byte_count = 0;
+unsigned char mask = 1;
+value = 0;
+while(1)
+{
+count = 0;
+while(readIrSensor() == 1)
+count++;
+if(count < 10 || count > 14)
+return 3;
+
+count = 0;
+while(readIrSensor() == 0)
+count++;
+
+
+if((count >=10 ) && ( count <=14) )
+value &= ~mask;
+else if(count > 33)
+value |= mask;
+else
+return 4;
+
+if(count > 200 )
+{
+if(mask == 1)
+{
+byte_count--;
+break;
+}
+else
+return 5;
+}
+
+if(mask == 0x80)
+{
+mask = 1;
+byte_count++;
+*irdata = value;
+irdata++;
+value = 0;
+if(byte_count > size)
+break;
+continue;
+}
+
+mask = mask << 1;
+}
+return 0;
+}
+
+unsigned char getIrData(void)
+{
+unsigned char count = 0;
+while(readIrSensor() == 0)
+count++;
+
+GPIO4 = 1;
+while(!readIrSensor()){}
+GPIO4 = 0;
+
+unsigned char irdata[5];
+error = readMark();
+if(!error)
+{
+error = readData(irdata, sizeof(irdata));
+if(!error)
+{
+if((irdata[0] == (unsigned char)~(irdata[1])) &&
+(irdata[0] == 0x82))
+{
+if(irdata[2] == (unsigned char) ~(irdata[3]))
+{
+return irdata[2];
+}
+else
+error = 7;
+}
+else
+error = 6;
+}
+}
+return 0;
+}
+
+unsigned char toHex(unsigned char v)
+{
+if(v >= 10)
+v += 'A'-'0'-10;
+v += '0';
+return v;
+}
+
+void main(void)
+{
+configure();
+while(1)
+{
+putch('\r');
+putch('\n');
+_delay((unsigned long)((500)*(4000000/4000.0)));
+unsigned char data = getIrData();
+if(!error)
+{
+putch('I');
+putch('R');
+putch(':');
+putch(toHex((data >> 4) & 0xf));
+putch(toHex(data & 0xf));
+}
+else
+{
+putch('E');
+putch(':');
+printInt(error);
+}
+}
+}
+
