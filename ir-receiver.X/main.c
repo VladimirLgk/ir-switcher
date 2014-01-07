@@ -35,7 +35,7 @@ const unsigned char osccallibrate @ 0x3FF = 0x30;
 #define WrongData 7
 
 unsigned char error;
-//unsigned char ir_count;
+unsigned char count;
 /*
 void readIrSensor()
 {
@@ -244,12 +244,17 @@ unsigned char readIrSensor()
 
 unsigned char readMark()
 {
+    //wait till first changing on ir port
+    GLED = 1;
+    while(!readIrSensor()){}
+    GLED = 0;
+
     //read first high mark
-    unsigned char count = 0;
+    /*unsigned char */ count = 0;
     while(readIrSensor() == 1)
         count++;
 
-    if(count < 190 || count > 220)
+    if(count < 180 || count > 225)
     {
         //ir_count = count;
         return HiMarkError;
@@ -271,7 +276,7 @@ unsigned char readMark()
 unsigned char readData(unsigned char * irdata, unsigned char size)
 {
     unsigned char value = 0;
-    unsigned char count = 0;
+    /*unsigned char */count = 0;
     unsigned char byte_count = 0;
     unsigned char mask = 1;
     value = 0;
@@ -280,7 +285,7 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
         count = 0;
         while(readIrSensor() == 1)
             count++;
-        if(count < 10 || count > 14)
+        if(count < 8 || count > 14)
             return LowBitError;
 
         count = 0;
@@ -288,7 +293,7 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
             count++;
 
         //test is it zero
-        if((count >=10 ) && ( count <=14) )
+        if((count >=8 ) && ( count <=14) )
             value &= ~mask;
         else if(count > 33)  //test is it one
             value |= mask;
@@ -325,14 +330,6 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
 
 unsigned char getIrData(void)
 {
-    unsigned char count = 0;
-    while(readIrSensor() == 0)
-        count++;
-
-    GLED = 1;
-    while(!readIrSensor()){}
-    GLED = 0;
-
     unsigned char irdata[5];
     error = readMark();
     if(!error)
@@ -387,6 +384,8 @@ void main(void)
            putch('E');
            putch(':');
            printInt(error);
+           putch(' ');
+           printInt(count);
        }
     }
 }
