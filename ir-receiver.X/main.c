@@ -342,6 +342,8 @@ unsigned char toHex(unsigned char v)
     return v;
 }
 
+#define LCD_DEBUG
+//#define UART_DEBUG
 void main(void)
 {
     configure();
@@ -356,6 +358,10 @@ void main(void)
        lcd_data[0] = 0b10000000;
        lcd_puts(DIGIT0 , lcd_data, 1);
 #endif
+#ifdef UART_DEBUG
+       putch('\r');
+       putch('\n');
+#endif
        unsigned char data = getIrData();
        if(error == 0)
        {
@@ -368,6 +374,13 @@ void main(void)
             lcd_data[5] = 0;
             lcd_data[6] = 0;
             lcd_puts(DIGIT0 , lcd_data, 7);
+#endif
+#ifdef UART_DEBUG
+           putch('I');
+           putch('R');
+           putch(':');
+           putch(toHex((data >> 4) & 0xf));
+           putch(toHex(data & 0xf));
 #endif
        }
        else
@@ -382,6 +395,14 @@ void main(void)
             lcd_data[6] = to7hex(count & 0xf);
             lcd_puts(DIGIT0,lcd_data, 7);
 #endif
+#ifdef UART_DEBUG
+           putch('E');
+           putch(':');
+           printInt(error);
+           putch(' ');
+           printInt(count);
+#endif
+
        }
     }
 }
