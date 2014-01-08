@@ -9,9 +9,9 @@
 #define WrongHeader 6
 #define WrongData 7
 
-volatile unsigned char error;
-volatile unsigned char count;
-volatile unsigned char ir_mask;
+//volatile unsigned char error;
+//volatile unsigned char count;
+//volatile unsigned char ir_mask;
 
 unsigned char readIrSensor()
 {
@@ -28,7 +28,7 @@ unsigned char readIrSensor()
     while(c);
     return port;
 }
-
+/*
 unsigned char readMark()
 {
     //wait till first changing on ir port
@@ -140,3 +140,4 @@ unsigned char getIrData(void)
     }
     return 0;
 }
+*/
