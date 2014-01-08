@@ -8,16 +8,15 @@
 #ifndef SYSTEM_H
 #define	SYSTEM_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
+#define _XTAL_FREQ 4000000
 
+#include <htc.h>
 
+#define IROUT GPIO2
+#define LED   GPIO5
+#define SERIAL GPIO0
 
-
-#ifdef	__cplusplus
-}
-#endif
-
+#define BTNON GPIO3
+#define BTNOFF GPIO4
 #endif	/* SYSTEM_H */
 

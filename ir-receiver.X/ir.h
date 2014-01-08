@@ -8,6 +8,8 @@
 #ifndef IR_H
 #define	IR_H
 
+#define IRPREFIX 0x82
+
 extern volatile unsigned char error;
 extern volatile unsigned char count;
 

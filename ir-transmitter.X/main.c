@@ -14,78 +14,119 @@ __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
 const unsigned char osccallibrate @ 0x3FF = 0x34;
+//volatile unsigned char IRDELAY_uS;
+volatile unsigned int delays[5];
+
+#define StartHi 0
+#define StartLow 1
+#define BitShort 2
+#define BitLong 3
+#define FinishLow 4
+
+#define IRPREFIX 0x82
+//#define IRDELAY_uS 45
+
+  void custom_delay(unsigned int value)
+  {
+      while(value--)
+      {
+          _nop();
+          _nop();
+      }
+  }
+
+void startIrTransaction()
+{
+    IROUT = 1;
+    custom_delay(delays[StartHi]);//220*IRDELAY_uS);
+    IROUT = 0;
+    custom_delay(delays[StartLow]);//110*IRDELAY_uS);
+}
+
+void sendData(unsigned char data)
+{
+    unsigned char mask = 0x1;
+    while(mask)
+    {
+        IROUT = 1;
+        custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+        IROUT = 0;
+        if(data & mask)
+            custom_delay(delays[BitLong]);//36*IRDELAY_uS);
+        else
+            custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+        mask = mask << 1;
+    }
+}
+
+void finishIrTransaction()
+{
+    IROUT = 1;
+    custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+    IROUT = 0;
+    custom_delay(delays[FinishLow]);//250*IRDELAY_uS);
+}
+
+void sendIrData(unsigned char val)
+{
+    startIrTransaction();
+    sendData(IRPREFIX);
+    sendData((unsigned char)(~IRPREFIX));
+    sendData(val);
+    sendData((unsigned char)(~val));
+    finishIrTransaction();
+}
 
 void configure(void)
 {
-    //configure GPIO as Led driver, Lcd Driver,
-    //Uart output driver, Ir Sensor
+    //configure GPIO as:
+    //GPIO0 = out, uart line port, GPIO1 = input, N.C. ,
+    //GPIO2 = out, IR transmitter, GPIO3 = input, Button On.
+    //GPIO4 = input, Button Off, GPIO5 = out, View led Driver.
     GPIO = 0;
     CMCON = 0x07;
-    TRISIO = 0b11001000;
+    TRISIO = 0b11011010;
 
     //setup initial value
-    STB = 1;
-    DAT = 0;
-    CLK = 1;
+    IROUT = 0;
+    LED = 0;
     SERIAL = 1;
 }
 
-unsigned char toHex(unsigned char v)
+void fillDelays(unsigned int factor)
 {
-    if(v >= 10)
-       v += 'A'-'0'-10;
-    v += '0';
-    return v;
+    delays[StartHi] = factor*20;
+    delays[StartLow] = factor*10;
+    delays[BitShort] = factor;
+    delays[BitLong] =  factor*3;
+    delays[FinishLow] = factor*20;
+    printf("Delays: %d, %d, %d, %d, %d \r\n", delays[StartHi], delays[StartLow],
+           delays[BitShort],delays[BitLong], delays[FinishLow] );
 }
-
-#define LCD_DEBUG
-#define UART_DEBUG
-void uartErrorMessage();
-void uartOkMessage(unsigned char data);
-void lcdErrorMessage(unsigned char * msg);
-void lcdOkMessage(unsigned char * msg, unsigned char data);
-
 
 void main(void)
 {
     configure();
-#ifdef LCD_DEBUG
-    lcdInit();
-    unsigned char lcdMessage[8];
-#endif
 
+    printf("Start ...\r\n");
     while(1)
     {
-       __delay_ms(500);
-       error = 0;
-#ifdef LCD_DEBUG
-      lcdMessage[0] = 0b10000000;
-      lcdPuts(DIGIT0 , lcdMessage, 1);
-#endif
-#ifdef UART_DEBUG
-       putch('\r');
-       putch('\n');
-#endif
-       unsigned char data = getIrData();
-       if(error == 0)
-       {
-        #ifdef LCD_DEBUG
-                lcdOkMessage(lcdMessage,data);
-        #endif
-        #ifdef UART_DEBUG
-                uartOkMessage(data);
-        #endif
-                //TBD: perform operations
-       }
-       else
-       {
-        #ifdef LCD_DEBUG
-                lcdErrorMessage(lcdMessage);
-        #endif
-        #ifdef UART_DEBUG
-                uartErrorMessage();
-        #endif
-       }
+        unsigned int IRDELAY_uS = 27;
+        while(IRDELAY_uS <= 28)
+        {
+            fillDelays(IRDELAY_uS);
+            unsigned char counter = 3;
+            while(counter--)
+            {
+                unsigned char value = 0xA8+counter;
+                LED = 1;
+                sendIrData(value);
+                LED = 0;
+                __delay_ms(500);
+                printf("Ir value: %x, delay %d\r\n",value ,IRDELAY_uS);
+            }
+            IRDELAY_uS++;
+        }
     }
 }
 

@@ -11,6 +11,7 @@
 
 volatile unsigned char error;
 volatile unsigned char count;
+volatile unsigned char ir_mask;
 
 unsigned char readIrSensor()
 {
@@ -74,31 +75,31 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
             return LowBitError;
 
         count = 0;
-        while(readIrSensor() == 0)
+        while(readIrSensor() == 0 && count < 200)
             count++;
 
         //test is it zero
-        if((count >=8 ) && ( count <=14) )
+        if( (count >= 8 ) && ( count <= 14) )
+        {
             value &= ~mask;
-        else if(count > 33)  //test is it one
-            value |= mask;
+        }
+        else if((count >= 24 ) && (count <= 44))  //test is it one
+        {
+            value |= mask;  
+        }
+        else if(count > 200)
+        {
+            if(mask == 0x80 && byte_count == 4 )
+                break;
+             return ByteTimeout;
+        }
         else
             return HiBitError;
-
-        if(count > 200 )
-        {
-            if(mask == 1)
-            {
-                byte_count--;
-                break;
-            }
-            else
-                return ByteTimeout;
-        }
 
         if(mask == 0x80)
         {
             mask = 1;
+            ir_mask = mask;
             byte_count++;
             *irdata = value;
             irdata++;
@@ -109,6 +110,7 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
         }
 
         mask = mask << 1;
+        ir_mask = mask;
     }
     return 0;
 }
@@ -123,7 +125,7 @@ unsigned char getIrData(void)
         if(! error)
         {
           if((irdata[0] == (unsigned char)~(irdata[1])) &&
-              (irdata[0] == 0x82))
+              (irdata[0] == IRPREFIX))
           {
                 if(irdata[2] == (unsigned char) ~(irdata[3]))
                 {
