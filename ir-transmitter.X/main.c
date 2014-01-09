@@ -24,23 +24,29 @@ volatile unsigned int delays[5];
 #define FinishLow 4
 
 #define IRPREFIX 0x82
-//#define IRDELAY_uS 45
 
-  void custom_delay(unsigned int value)
+#define HiPmbLength 210
+#define LowPmbLength 100
+#define shortSignalLength 11
+#define longSignalLength 36
+
+#define DELAY_uS 34
+#define CALLROUTINE_uS 18
+
+  void us34Delay(unsigned char value)
   {
+      __delay_us(DELAY_uS-CALLROUTINE_uS);
+      value--;
       while(value--)
-      {
-          _nop();
-          _nop();
-      }
+         __delay_us(DELAY_uS);
   }
 
-void startIrTransaction()
+void irPreamble()
 {
     IROUT = 1;
-    custom_delay(delays[StartHi]);//220*IRDELAY_uS);
+    us34Delay(HiPmbLength);
     IROUT = 0;
-    custom_delay(delays[StartLow]);//110*IRDELAY_uS);
+    us34Delay(LowPmbLength);
 }
 
 void sendData(unsigned char data)
@@ -49,32 +55,32 @@ void sendData(unsigned char data)
     while(mask)
     {
         IROUT = 1;
-        custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+        us34Delay(shortSignalLength);
         IROUT = 0;
         if(data & mask)
-            custom_delay(delays[BitLong]);//36*IRDELAY_uS);
+            us34Delay(longSignalLength);
         else
-            custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+            us34Delay(shortSignalLength);
         mask = mask << 1;
     }
 }
 
-void finishIrTransaction()
+void irStopBit()
 {
     IROUT = 1;
-    custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+    us34Delay(shortSignalLength);
     IROUT = 0;
-    custom_delay(delays[FinishLow]);//250*IRDELAY_uS);
+    us34Delay(LowPmbLength+50);
 }
 
 void sendIrData(unsigned char val)
 {
-    startIrTransaction();
+    irPreamble();
     sendData(IRPREFIX);
     sendData((unsigned char)(~IRPREFIX));
     sendData(val);
     sendData((unsigned char)(~val));
-    finishIrTransaction();
+    irStopBit();
 }
 
 void configure(void)
@@ -93,39 +99,37 @@ void configure(void)
     SERIAL = 1;
 }
 
-void fillDelays(unsigned int factor)
-{
-    delays[StartHi] = factor*20;
-    delays[StartLow] = factor*10;
-    delays[BitShort] = factor;
-    delays[BitLong] =  factor*3;
-    delays[FinishLow] = factor*20;
-    printf("Delays: %d, %d, %d, %d, %d \r\n", delays[StartHi], delays[StartLow],
-           delays[BitShort],delays[BitLong], delays[FinishLow] );
-}
-
 void main(void)
 {
     configure();
 
+
+    printf("Measure\r\n");
+    LED = 1;
+    LED = 0;
+    LED = 1;
+     __delay_us(DELAY_uS);
+    LED = 0;
+    LED = 1;
+    us34Delay(1);
+    LED = 0;
+    LED = 1;
+    us34Delay(1);
+    LED = 0;
+    LED = 1;
+    us34Delay(1);
+    LED = 0;
     printf("Start ...\r\n");
     while(1)
     {
-        unsigned int IRDELAY_uS = 27;
-        while(IRDELAY_uS <= 28)
+        unsigned char counter = 32;
+        while(counter--)
         {
-            fillDelays(IRDELAY_uS);
-            unsigned char counter = 3;
-            while(counter--)
-            {
-                unsigned char value = 0xA8+counter;
-                LED = 1;
-                sendIrData(value);
-                LED = 0;
-                __delay_ms(500);
-                printf("Ir value: %x, delay %d\r\n",value ,IRDELAY_uS);
-            }
-            IRDELAY_uS++;
+            LED = 1;
+            sendIrData(counter);
+            LED = 0;
+            __delay_ms(300);
+            printf("Ir value: %x\r\n",counter);
         }
     }
 }

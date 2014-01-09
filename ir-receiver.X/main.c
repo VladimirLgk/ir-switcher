@@ -45,6 +45,27 @@ void lcdOkMessage(unsigned char * msg, unsigned char data);
 void main(void)
 {
     configure();
+    //measure
+    GLED = 1;
+    GLED = 0;
+    GLED = 1;
+    readIrSensor();
+    GLED = 0;
+    GLED = 1;
+    count = 0;
+    while(!readIrSensor() && count < 1)
+        count++;
+    GLED = 0;
+    GLED = 1;
+    count = 0;
+    while(!readIrSensor() && count < 2)
+        count++;
+    GLED = 0;
+    GLED = 1;
+    count = 0;
+    while(!readIrSensor() && count < 3)
+        count++;
+
 #ifdef LCD_DEBUG
     lcdInit();
     unsigned char lcdMessage[8];
@@ -52,7 +73,7 @@ void main(void)
     
     while(1)
     {
-       __delay_ms(500);
+       __delay_ms(200);
        error = 0;
 #ifdef LCD_DEBUG
       lcdMessage[0] = 0b10000000;

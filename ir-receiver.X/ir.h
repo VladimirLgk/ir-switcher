@@ -10,6 +10,11 @@
 
 #define IRPREFIX 0x82
 
+#define HiPmbLength 210
+#define LowPmbLength 100
+#define shortSignalLength 11
+#define longSignalLength 36
+
 extern volatile unsigned char error;
 extern volatile unsigned char count;
 

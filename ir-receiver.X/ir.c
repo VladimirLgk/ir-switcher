@@ -35,28 +35,19 @@ unsigned char readMark()
     GLED = 1;
     while(!readIrSensor()){}
     GLED = 0;
-
-    //read first high mark
+    //read preambula high
     count = 0;
     while(readIrSensor() == 1)
         count++;
-
-    if(count < 180 || count > 225)
-    {
-        //ir_count = count;
+    if(count < (HiPmbLength-20) || count > (HiPmbLength+20))
         return HiMarkError;
-    }
-
+     //read preambula low
     count = 0;
-    //read first low mark
     while(readIrSensor() == 0)
         count++;
-
-    if(count < 90 || count > 115)
-    {
-        //ir_count = count;
+    if(count < (LowPmbLength-15) || count > (LowPmbLength+15))
         return LowMarkError;
-    }
+
     return 0;
 }
 
@@ -71,46 +62,32 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
         count = 0;
         while(readIrSensor() == 1)
             count++;
-        if(count < 8 || count > 14)
-            return LowBitError;
+        if(count < (shortSignalLength-3) || count > (shortSignalLength+3))
+            return HiBitError;
 
         count = 0;
-        while(readIrSensor() == 0 && count < 200)
+        while(readIrSensor() == 0 && count < (LowPmbLength+15))
             count++;
-
-        //test is it zero
-        if( (count >= 8 ) && ( count <= 14) )
-        {
-            value &= ~mask;
-        }
-        else if((count >= 24 ) && (count <= 44))  //test is it one
-        {
-            value |= mask;  
-        }
-        else if(count > 200)
-        {
-            if(mask == 0x80 && byte_count == 4 )
-                break;
-             return ByteTimeout;
-        }
+        if( (count >= (shortSignalLength-2) ) && ( count <= (shortSignalLength+2)))
+            value &= ~mask; //test and set for zero bit
+        else if((count >=  (longSignalLength-5) ) && (count <= (longSignalLength+5)))
+            value |= mask;  //test and set for one bit
+        else if(count >= (LowPmbLength+15))
+            break;          //test for finish transaction
         else
-            return HiBitError;
+            return LowBitError;
 
         if(mask == 0x80)
         {
-            mask = 1;
-            ir_mask = mask;
+            irdata[byte_count] = value;
             byte_count++;
-            *irdata = value;
-            irdata++;
-             value = 0;
-            if(byte_count > size)
+            mask = 1;
+            value = 0;
+            if(byte_count >= size)
                 break;
             continue;
         }
-
         mask = mask << 1;
-        ir_mask = mask;
     }
     return 0;
 }
@@ -128,9 +105,7 @@ unsigned char getIrData(void)
               (irdata[0] == IRPREFIX))
           {
                 if(irdata[2] == (unsigned char) ~(irdata[3]))
-                {
                     return irdata[2];
-                }
                 else
                    error = WrongData;
           }
