@@ -41,31 +41,33 @@ void uartOkMessage(unsigned char data);
 void lcdErrorMessage(unsigned char * msg);
 void lcdOkMessage(unsigned char * msg, unsigned char data);
 
-
-void main(void)
+void calibrate(void)
 {
-    configure();
-    //measure
+    count = 0;
     GLED = 1;
     GLED = 0;
     GLED = 1;
     readIrSensor();
     GLED = 0;
     GLED = 1;
-    count = 0;
     while(!readIrSensor() && count < 1)
         count++;
     GLED = 0;
     GLED = 1;
-    count = 0;
     while(!readIrSensor() && count < 2)
         count++;
     GLED = 0;
     GLED = 1;
-    count = 0;
     while(!readIrSensor() && count < 3)
         count++;
+}
 
+
+void main(void)
+{
+    configure();
+    calibrate();
+    
 #ifdef LCD_DEBUG
     lcdInit();
     unsigned char lcdMessage[8];

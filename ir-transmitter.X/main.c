@@ -99,12 +99,8 @@ void configure(void)
     SERIAL = 1;
 }
 
-void main(void)
+void calibrate()
 {
-    configure();
-
-
-    printf("Measure\r\n");
     LED = 1;
     LED = 0;
     LED = 1;
@@ -114,11 +110,18 @@ void main(void)
     us34Delay(1);
     LED = 0;
     LED = 1;
-    us34Delay(1);
+    us34Delay(2);
     LED = 0;
     LED = 1;
-    us34Delay(1);
+    us34Delay(3);
     LED = 0;
+}
+
+void main(void)
+{
+    configure();
+    printf("Measure\r\n");
+    calibrate();
     printf("Start ...\r\n");
     while(1)
     {
