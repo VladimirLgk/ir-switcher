@@ -30,16 +30,16 @@ volatile unsigned int delays[5];
 #define shortSignalLength 11
 #define longSignalLength 36
 
-#define DELAY_uS 34
-#define CALLROUTINE_uS 18
+#define DELAY_uS 43
+#define CALLROUTINE_uS 14
 
-  void us34Delay(unsigned char value)
-  {
-      __delay_us(DELAY_uS-CALLROUTINE_uS);
-      value--;
-      while(value--)
-         __delay_us(DELAY_uS);
-  }
+void us34Delay(unsigned char value)
+{
+  __delay_us(DELAY_uS-CALLROUTINE_uS);
+  value--;
+  while(value--)
+     __delay_us(DELAY_uS);
+}
 
 void irPreamble()
 {
@@ -83,6 +83,24 @@ void sendIrData(unsigned char val)
     irStopBit();
 }
 
+unsigned char readButtons(void)
+{
+    unsigned char c = 5;
+    unsigned char prevButton = ((unsigned char) (BTNON) << 1) | (BTNOFF);
+    unsigned char button = 0;
+    do
+    {
+        __delay_ms(5);
+        button = ((unsigned char) (BTNON) << 1) | (BTNOFF);
+        if( prevButton != button)
+            prevButton = button;
+        else
+            c--;
+    }
+    while(c);
+    return button;
+}
+
 void configure(void)
 {
     //configure GPIO as:
@@ -123,16 +141,26 @@ void main(void)
     printf("Measure\r\n");
     calibrate();
     printf("Start ...\r\n");
+    unsigned char sendData;;
+    unsigned char btn;
     while(1)
     {
-        unsigned char counter = 32;
-        while(counter--)
+        btn = readButtons();
+        printf("Buttons: %d\r\n",btn );
+        sendData = 0;
+        if(btn == 1)
+            sendData = 0x12;
+        else if(btn == 2)
+            sendData = 0x34;
+        else if(btn == 3)
+            sendData = 0x56;
+
+        if(sendData != 0)
         {
             LED = 1;
-            sendIrData(counter);
+            sendIrData(sendData);
             LED = 0;
             __delay_ms(300);
-            printf("Ir value: %x\r\n",counter);
         }
     }
 }
