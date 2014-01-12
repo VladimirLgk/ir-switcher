@@ -9,7 +9,7 @@
 __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
-const unsigned char osccallibrate @ 0x3FF = 0x30;
+const unsigned char osccallibrate @ 0x3FF = 0x50;
 
 void configure(void)
 {
@@ -35,7 +35,7 @@ unsigned char toHex(unsigned char v)
 }
 
 #define LCD_DEBUG
-#define UART_DEBUG
+//#define UART_DEBUG
 void uartErrorMessage();
 void uartOkMessage(unsigned char data);
 void lcdErrorMessage(unsigned char * msg);
@@ -43,39 +43,45 @@ void lcdOkMessage(unsigned char * msg, unsigned char data);
 
 void calibrate(void)
 {
-    count = 0;
     GLED = 1;
     GLED = 0;
     GLED = 1;
     readIrSensor();
     GLED = 0;
+    count = 0;
     GLED = 1;
     while(!readIrSensor() && count < 1)
         count++;
     GLED = 0;
+    count = 0;
     GLED = 1;
     while(!readIrSensor() && count < 2)
         count++;
     GLED = 0;
+    count = 0;
     GLED = 1;
     while(!readIrSensor() && count < 3)
         count++;
+    GLED = 0;
+    count = 0;
+    GLED = 1;
+    while(!readIrSensor() && count < 4)
+        count++;
+    GLED = 0;
 }
 
 
 void main(void)
 {
-    configure();
-    calibrate();
-    
+    configure();    
 #ifdef LCD_DEBUG
     lcdInit();
     unsigned char lcdMessage[8];
 #endif
-    
+    calibrate();
     while(1)
     {
-       __delay_ms(200);
+       __delay_ms(50);
        error = 0;
 #ifdef LCD_DEBUG
       lcdMessage[0] = 0b10000000;

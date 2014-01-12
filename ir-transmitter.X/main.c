@@ -13,15 +13,7 @@
 __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
-const unsigned char osccallibrate @ 0x3FF = 0x34;
-//volatile unsigned char IRDELAY_uS;
-volatile unsigned int delays[5];
-
-#define StartHi 0
-#define StartLow 1
-#define BitShort 2
-#define BitLong 3
-#define FinishLow 4
+const unsigned char osccallibrate @ 0x3FF = 0x3434; //34
 
 #define IRPREFIX 0x82
 
@@ -30,8 +22,8 @@ volatile unsigned int delays[5];
 #define shortSignalLength 11
 #define longSignalLength 36
 
-#define DELAY_uS 43
-#define CALLROUTINE_uS 14
+#define DELAY_uS 35
+#define CALLROUTINE_uS 10
 
 void us34Delay(unsigned char value)
 {
@@ -122,9 +114,14 @@ void calibrate()
     LED = 1;
     LED = 0;
     LED = 1;
+    LED = 0;
+    LED = 1;
      __delay_us(DELAY_uS);
     LED = 0;
     LED = 1;
+    //us34Delay(0);
+    //LED = 0;
+    //LED = 1;
     us34Delay(1);
     LED = 0;
     LED = 1;
@@ -133,35 +130,67 @@ void calibrate()
     LED = 1;
     us34Delay(3);
     LED = 0;
+    LED = 1;
+    us34Delay(4);
+    LED = 0;
+    LED = 1;
+    us34Delay(5);
+    LED = 0;
 }
 
 void main(void)
 {
     configure();
-    printf("Measure\r\n");
     calibrate();
-    printf("Start ...\r\n");
-    unsigned char sendData;;
+    unsigned char sendData = 0;
     unsigned char btn;
+    unsigned char pressCount = 0;
+    unsigned char prevBtn = 0;
     while(1)
     {
+        prevBtn = btn;
         btn = readButtons();
-        printf("Buttons: %d\r\n",btn );
-        sendData = 0;
-        if(btn == 1)
-            sendData = 0x12;
-        else if(btn == 2)
-            sendData = 0x34;
-        else if(btn == 3)
-            sendData = 0x56;
+        if(prevBtn == btn && btn != 0)
+        {
+            if( pressCount < 5 )
+                pressCount++;
+        }
+        else
+            pressCount = 0;
 
-        if(sendData != 0)
+        if(btn == 1)
+        {
+            if(pressCount >= 5 )
+                sendData++;
+            else
+                sendData = 0x1A;
+        }
+        else if(btn == 2)
+        {
+            if(pressCount >= 5 )
+                sendData--;
+            else
+                sendData = 0x2B;
+        }
+        else if(btn == 3)
+        {
+            if(pressCount >= 5 )
+                sendData = 0;
+            else
+                sendData = 0xff;
+        }
+        
+        if(btn)
         {
             LED = 1;
             sendIrData(sendData);
             LED = 0;
-            __delay_ms(300);
+            __delay_ms(80);
         }
     }
 }
+
+/*  sendData = 0;
+       
+            sendData = 0x56;*/
 
