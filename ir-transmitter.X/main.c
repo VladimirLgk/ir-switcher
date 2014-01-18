@@ -22,22 +22,20 @@ const unsigned char osccallibrate @ 0x3FF = 0x3434; //34
 #define shortSignalLength 9
 #define longSignalLength 27
 
-#define DELAY_uS 35
-
 #define WAIT_38 12
 
 void burst38khz(unsigned char value)
 {
     while(value--)
     {
+       IROUT = 1;
        _delay(WAIT_38);
-       LED = 1;
+       IROUT = 0;
        _delay(WAIT_38);
-       LED = 0;
+       IROUT = 1;
        _delay(WAIT_38);
-       LED = 1;
+       IROUT = 0;
        _delay(WAIT_38);
-       LED = 0;
     }
 }
 
@@ -58,9 +56,7 @@ void delay38khz(unsigned char value)
 
 void irPreamble()
 {
-    IROUT = 1;
     burst38khz(HiPmbLength);
-    IROUT = 0;
     delay38khz(LowPmbLength);
 }
 
@@ -69,9 +65,7 @@ void sendData(unsigned char data)
     unsigned char mask = 0x1;
     while(mask)
     {
-        IROUT = 1;
         burst38khz(shortSignalLength);
-        IROUT = 0;
         if(data & mask)
             delay38khz(longSignalLength);
         else
@@ -82,9 +76,7 @@ void sendData(unsigned char data)
 
 void irStopBit()
 {
-    IROUT = 1;
     burst38khz(shortSignalLength);
-    IROUT = 0;
     delay38khz(LowPmbLength+50);
 }
 
@@ -132,87 +124,7 @@ void configure(void)
     SERIAL = 1;
 }
 
-#define WAIT_38 12
-
-void burst38khzCal(unsigned char value)
-{
-    while(value--)
-    {
-       _delay(WAIT_38);
-       LED = 1;
-       _delay(WAIT_38);
-       LED = 0;
-       _delay(WAIT_38);
-       LED = 1;
-       _delay(WAIT_38);
-       LED = 0;
-    }
-}
-
-void delay38khzCal(unsigned char value)
-{
-    while(value--)
-    {
-       _delay(WAIT_38);
-       IROUT = 1;
-       _delay(WAIT_38);
-       IROUT = 0;
-       _delay(WAIT_38);
-       IROUT = 1;
-       _delay(WAIT_38);
-       IROUT = 0;
-    }
-}
-
-void calibrate()
-{
-    LED = 1;
-    LED = 0;
-    LED = 1;
-    LED = 0;
-    LED = 1;
-/*     __delay_us(DELAY_uS);
-    LED = 0;
-    LED = 1;
-    //us34Delay(0);
-    //LED = 0;
-    //LED = 1;
-    us34Delay(1);
-    LED = 0;
-    LED = 1;
-    us34Delay(2);
-    LED = 0;
-    LED = 1;
-    us34Delay(3);
-    LED = 0;
-    //LED = 1;
-    //us34Delay(4);
-    //LED = 0;
-    //LED = 1;
-    //us34Delay(5);*/
-    //LED = 0;
-    _nop();
-    _nop();
-    _nop();
-    burst38khzCal(3);
-    burst38khzCal(3);
-    _nop();
-    _nop();
-    _nop();
-    burst38khzCal(6);
-    _nop();
-    _nop();
-    LED = 1;
-    delay38khzCal(4);
-    LED = 0;
-    LED = 1;
-    delay38khzCal(3);
-    LED = 0;
-    LED = 1;
-    delay38khzCal(2);
-    LED = 0;
-}
-
+void calibrate();
 void main(void)
 {
     configure();
@@ -265,7 +177,62 @@ void main(void)
     }
 }
 
-/*  sendData = 0;
-       
-            sendData = 0x56;*/
+void burst38khzCal(unsigned char value)
+{
+    while(value--)
+    {
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+    }
+}
+
+void delay38khzCal(unsigned char value)
+{
+    while(value--)
+    {
+       _delay(WAIT_38);
+        _nop();
+       _delay(WAIT_38);
+       _nop();
+       _delay(WAIT_38);
+       _nop();
+       _delay(WAIT_38);
+        _nop();
+    }
+}
+
+void calibrate()
+{
+    LED = 1;
+    LED = 0;
+    LED = 1;
+    LED = 0;
+    LED = 1;
+    _nop();
+    _nop();
+    _nop();
+    burst38khzCal(3);
+    burst38khzCal(3);
+    _nop();
+    _nop();
+    _nop();
+    burst38khzCal(6);
+    _nop();
+    _nop();
+    LED = 1;
+    delay38khzCal(4);
+    LED = 0;
+    LED = 1;
+    delay38khzCal(3);
+    LED = 0;
+    LED = 1;
+    delay38khzCal(2);
+    LED = 0;
+}
 

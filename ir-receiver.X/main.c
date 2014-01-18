@@ -1,7 +1,6 @@
+#include "system.h"
 #include <htc.h>	
 #include <stdio.h>
-
-#include "system.h"
 #include "ir.h"
 #include "lcd.h"
 #include "uart.h"
@@ -9,7 +8,7 @@
 __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
-const unsigned char osccallibrate @ 0x3FF = 0x50;
+const unsigned char osccallibrate @ 0x3FF = 0x3450;
 
 void configure(void)
 {
@@ -40,35 +39,7 @@ void uartErrorMessage(unsigned char error);
 void uartOkMessage(unsigned char * data);
 void lcdErrorMessage(unsigned char * msg, unsigned char error);
 void lcdOkMessage(unsigned char * msg, unsigned char * data);
-
-void calibrate(void)
-{
-    GLED = 1;
-    GLED = 0;
-    GLED = 1;
-    readIrSensor();
-    GLED = 0;
-    count = 0;
-    GLED = 1;
-    while(!readIrSensor() && count < 1)
-        count++;
-    GLED = 0;
-    count = 0;
-    GLED = 1;
-    while(!readIrSensor() && count < 2)
-        count++;
-    GLED = 0;
-    count = 0;
-    GLED = 1;
-    while(!readIrSensor() && count < 3)
-        count++;
-    GLED = 0;
-    count = 0;
-    GLED = 1;
-    while(!readIrSensor() && count < 4)
-        count++;
-    GLED = 0;
-}
+void calibrate(void);
 
 void main(void)
 {
@@ -111,6 +82,35 @@ void main(void)
         #endif
        }
     }
+}
+
+void calibrate(void)
+{
+    GLED = 1;
+    GLED = 0;
+    GLED = 1;
+    readIrSensor();
+    GLED = 0;
+    count = 0;
+    GLED = 1;
+    while(!readIrSensor() && count < 1)
+        count++;
+    GLED = 0;
+    count = 0;
+    GLED = 1;
+    while(!readIrSensor() && count < 2)
+        count++;
+    GLED = 0;
+    count = 0;
+    GLED = 1;
+    while(!readIrSensor() && count < 3)
+        count++;
+    GLED = 0;
+    count = 0;
+    GLED = 1;
+    while(!readIrSensor() && count < 4)
+        count++;
+    GLED = 0;
 }
 
 void lcdOkMessage(unsigned char * msg, unsigned char * data)
