@@ -10,13 +10,17 @@
 
 #define IRPREFIX 0x82
 
+#define HiPmbLength 210
+#define LowPmbLength 100 
+#define shortSignalLength 13
+#define longSignalLength 40
+
 //extern volatile unsigned char error;
-///extern volatile unsigned char count;
+extern volatile unsigned char count;
 
 unsigned char readIrSensor();
-//unsigned char readMark();
-//unsigned char readData(unsigned char * irdata, unsigned char size);
-//unsigned char getIrData(void);
-
+unsigned char readMark();
+unsigned char readData(unsigned char * irdata, unsigned char size);
+unsigned char getIrData(unsigned char *);
 #endif	/* IR_H */
 

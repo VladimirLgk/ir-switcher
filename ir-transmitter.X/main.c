@@ -13,34 +13,55 @@
 __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
-const unsigned char osccallibrate @ 0x3FF = 0x34;
-//volatile unsigned char IRDELAY_uS;
-volatile unsigned int delays[5];
+const unsigned char osccallibrate @ 0x3FF = 0x3434; //34
 
-#define StartHi 0
-#define StartLow 1
-#define BitShort 2
-#define BitLong 3
-#define FinishLow 4
+#define IRPREFIX 0x17
 
-#define IRPREFIX 0x82
-//#define IRDELAY_uS 45
+#define HiPmbLength 145
+#define LowPmbLength 73
+#define shortSignalLength 9
+#define longSignalLength 27
 
-  void custom_delay(unsigned int value)
-  {
-      while(value--)
-      {
-          _nop();
-          _nop();
-      }
-  }
+#define DELAY_uS 35
 
-void startIrTransaction()
+#define WAIT_38 12
+
+void burst38khz(unsigned char value)
+{
+    while(value--)
+    {
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+    }
+}
+
+void delay38khz(unsigned char value)
+{
+    while(value--)
+    {
+       _delay(WAIT_38);
+       _nop();
+       _delay(WAIT_38);
+       _nop();
+       _delay(WAIT_38);
+       _nop();
+       _delay(WAIT_38);
+       _nop();
+    }
+}
+
+void irPreamble()
 {
     IROUT = 1;
-    custom_delay(delays[StartHi]);//220*IRDELAY_uS);
+    burst38khz(HiPmbLength);
     IROUT = 0;
-    custom_delay(delays[StartLow]);//110*IRDELAY_uS);
+    delay38khz(LowPmbLength);
 }
 
 void sendData(unsigned char data)
@@ -49,32 +70,50 @@ void sendData(unsigned char data)
     while(mask)
     {
         IROUT = 1;
-        custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+        burst38khz(shortSignalLength);
         IROUT = 0;
         if(data & mask)
-            custom_delay(delays[BitLong]);//36*IRDELAY_uS);
+            delay38khz(longSignalLength);
         else
-            custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+            delay38khz(shortSignalLength);
         mask = mask << 1;
     }
 }
 
-void finishIrTransaction()
+void irStopBit()
 {
     IROUT = 1;
-    custom_delay(delays[BitShort]);//12*IRDELAY_uS);
+    burst38khz(shortSignalLength);
     IROUT = 0;
-    custom_delay(delays[FinishLow]);//250*IRDELAY_uS);
+    delay38khz(LowPmbLength+50);
 }
 
 void sendIrData(unsigned char val)
 {
-    startIrTransaction();
+    irPreamble();
     sendData(IRPREFIX);
     sendData((unsigned char)(~IRPREFIX));
     sendData(val);
     sendData((unsigned char)(~val));
-    finishIrTransaction();
+    irStopBit();
+}
+
+unsigned char readButtons(void)
+{
+    unsigned char c = 5;
+    unsigned char prevButton = ((unsigned char) (BTNON) << 1) | (BTNOFF);
+    unsigned char button = 0;
+    do
+    {
+        __delay_ms(5);
+        button = ((unsigned char) (BTNON) << 1) | (BTNOFF);
+        if( prevButton != button)
+            prevButton = button;
+        else
+            c--;
+    }
+    while(c);
+    return button;
 }
 
 void configure(void)
@@ -93,40 +132,140 @@ void configure(void)
     SERIAL = 1;
 }
 
-void fillDelays(unsigned int factor)
+#define WAIT_38 12
+
+void burst38khzCal(unsigned char value)
 {
-    delays[StartHi] = factor*20;
-    delays[StartLow] = factor*10;
-    delays[BitShort] = factor;
-    delays[BitLong] =  factor*3;
-    delays[FinishLow] = factor*20;
-    printf("Delays: %d, %d, %d, %d, %d \r\n", delays[StartHi], delays[StartLow],
-           delays[BitShort],delays[BitLong], delays[FinishLow] );
+    while(value--)
+    {
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+       _delay(WAIT_38);
+       LED = 1;
+       _delay(WAIT_38);
+       LED = 0;
+    }
+}
+
+void delay38khzCal(unsigned char value)
+{
+    while(value--)
+    {
+       _delay(WAIT_38);
+       IROUT = 1;
+       _delay(WAIT_38);
+       IROUT = 0;
+       _delay(WAIT_38);
+       IROUT = 1;
+       _delay(WAIT_38);
+       IROUT = 0;
+    }
+}
+
+void calibrate()
+{
+    LED = 1;
+    LED = 0;
+    LED = 1;
+    LED = 0;
+    LED = 1;
+/*     __delay_us(DELAY_uS);
+    LED = 0;
+    LED = 1;
+    //us34Delay(0);
+    //LED = 0;
+    //LED = 1;
+    us34Delay(1);
+    LED = 0;
+    LED = 1;
+    us34Delay(2);
+    LED = 0;
+    LED = 1;
+    us34Delay(3);
+    LED = 0;
+    //LED = 1;
+    //us34Delay(4);
+    //LED = 0;
+    //LED = 1;
+    //us34Delay(5);*/
+    //LED = 0;
+    _nop();
+    _nop();
+    _nop();
+    burst38khzCal(3);
+    burst38khzCal(3);
+    _nop();
+    _nop();
+    _nop();
+    burst38khzCal(6);
+    _nop();
+    _nop();
+    LED = 1;
+    delay38khzCal(4);
+    LED = 0;
+    LED = 1;
+    delay38khzCal(3);
+    LED = 0;
+    LED = 1;
+    delay38khzCal(2);
+    LED = 0;
 }
 
 void main(void)
 {
     configure();
-
-    printf("Start ...\r\n");
+    calibrate();
+    unsigned char sendData = 0;
+    unsigned char btn;
+    unsigned char pressCount = 0;
+    unsigned char prevBtn = 0;
     while(1)
     {
-        unsigned int IRDELAY_uS = 27;
-        while(IRDELAY_uS <= 28)
+        prevBtn = btn;
+        btn = readButtons();
+        if(prevBtn == btn && btn != 0)
         {
-            fillDelays(IRDELAY_uS);
-            unsigned char counter = 3;
-            while(counter--)
-            {
-                unsigned char value = 0xA8+counter;
-                LED = 1;
-                sendIrData(value);
-                LED = 0;
-                __delay_ms(500);
-                printf("Ir value: %x, delay %d\r\n",value ,IRDELAY_uS);
-            }
-            IRDELAY_uS++;
+            if( pressCount < 5 )
+                pressCount++;
+        }
+        else
+            pressCount = 0;
+
+        if(btn == 1)
+        {
+            if(pressCount >= 5 )
+                sendData++;
+            else
+                sendData = 0x1A;
+        }
+        else if(btn == 2)
+        {
+            if(pressCount >= 5 )
+                sendData--;
+            else
+                sendData = 0x2B;
+        }
+        else if(btn == 3)
+        {
+            if(pressCount >= 5 )
+                sendData = 0;
+            else
+                sendData = 0xff;
+        }
+        
+        if(btn)
+        {
+            LED = 1;
+            sendIrData(sendData);
+            LED = 0;
+            __delay_ms(80);
         }
     }
 }
+
+/*  sendData = 0;
+       
+            sendData = 0x56;*/
 
