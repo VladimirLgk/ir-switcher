@@ -11,7 +11,7 @@ __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 //store calibrated value for osc as retlw instruction in given address
 const unsigned char osccallibrate @ 0x3FF = 0x50;
 
-#define VALUES 17
+#define VALUES 20
 unsigned char highLevel[VALUES];
 unsigned char lowLevel[VALUES];
 
@@ -45,10 +45,13 @@ unsigned char toHex(unsigned char v)
     return v;
 }
 
+#define IR_ON 0
+#define IR_OFF 1
+
 void measureIrSignal(void )
 {
     GLED = 1;
-    while(!readIrSensor()){}
+    while(readIrSensor() == IR_OFF){}
     GLED = 0;
 
     highItems = 0;
@@ -59,11 +62,11 @@ void measureIrSignal(void )
     while(1)
     {
         countHi = 0;
-        while(readIrSensor() == 1)
+        while(readIrSensor() == IR_ON)
             countHi++;
 
         countLo = 0;
-        while(readIrSensor() == 0 && countLo < 250 )
+        while(readIrSensor() == IR_OFF && countLo < 250 )
             countLo++;
 
         if(levelIndex < VALUES)
@@ -83,6 +86,7 @@ void measureIrSignal(void )
 
 }
 
+void puts__(const char * s);
 void measureOutput();
 void main(void)
 {
@@ -125,6 +129,7 @@ void puts__(const char * s)
 
 void measureOutput()
 {
+      unsigned char count = 0;
        putch('A');
        putch(':');
        printUartInt(levelIndex);

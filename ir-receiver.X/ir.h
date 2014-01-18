@@ -15,9 +15,6 @@
 #define shortSignalLength 13
 #define longSignalLength 40
 
-//extern volatile unsigned char error;
-extern volatile unsigned char count;
-
 unsigned char readIrSensor();
 unsigned char readMark();
 unsigned char readData(unsigned char * irdata, unsigned char size);
