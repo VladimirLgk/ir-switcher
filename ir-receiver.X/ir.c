@@ -9,9 +9,14 @@
 #define WrongHeader 6
 #define WrongData 7
 
-volatile unsigned char error;
+unsigned char irdata[5];
+
+//volatile unsigned char error;
 volatile unsigned char count;
 volatile unsigned char ir_mask;
+
+#define IR_ON 0
+#define IR_OFF 1
 
 unsigned char readIrSensor()
 {
@@ -32,22 +37,31 @@ unsigned char readIrSensor()
 unsigned char readMark()
 {
     //wait till first changing on ir port
-    GLED = 1;
-    while(!readIrSensor()){}
-    GLED = 0;
-    //read preambula high
-    count = 0;
-    while(readIrSensor() == 1)
-        count++;
-    if(count < (HiPmbLength-20) || count > (HiPmbLength+20))
-        return HiMarkError;
-     //read preambula low
-    count = 0;
-    while(readIrSensor() == 0)
-        count++;
-    if(count < (LowPmbLength-15) || count > (LowPmbLength+15))
-        return LowMarkError;
+    do
+    {
+        GLED = 1;
+        while(readIrSensor() == IR_OFF){}
+        GLED = 0;
 
+        //read preambula high
+        count = 0;
+        while(readIrSensor() == IR_ON)
+            count++;
+        if(count < (HiPmbLength-20) || count > (HiPmbLength+20))
+            return HiMarkError;
+         //read preambula low
+        count = 0;
+        while(readIrSensor() == IR_OFF)
+            count++;
+
+        if(count >= (longSignalLength+shortSignalLength-5) && count <= (longSignalLength+shortSignalLength+5) ) //repeat
+            continue;
+        else if(count >= (LowPmbLength-15) && count <= (LowPmbLength+15)) //data start
+            break;
+        else
+            return LowMarkError;    //error
+    }while(1);
+    
     return 0;
 }
 
@@ -60,15 +74,15 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
     while(1)
     {
         count = 0;
-        while(readIrSensor() == 1)
+        while(readIrSensor() == IR_ON)
             count++;
-        if(count < (shortSignalLength-3) || count > (shortSignalLength+3))
+        if(count < (shortSignalLength-5) || count > (shortSignalLength+5))
             return HiBitError;
 
         count = 0;
-        while(readIrSensor() == 0 && count < (LowPmbLength+15))
+        while(readIrSensor() == IR_OFF && count < (LowPmbLength+15))
             count++;
-        if( (count >= (shortSignalLength-2) ) && ( count <= (shortSignalLength+2)))
+        if( (count >= (shortSignalLength-5) ) && ( count <= (shortSignalLength+5)))
             value &= ~mask; //test and set for zero bit
         else if((count >=  (longSignalLength-5) ) && (count <= (longSignalLength+5)))
             value |= mask;  //test and set for one bit
@@ -92,20 +106,22 @@ unsigned char readData(unsigned char * irdata, unsigned char size)
     return 0;
 }
 
-unsigned char getIrData(void)
+unsigned char getIrData(unsigned char * outData)
 {
-    unsigned char irdata[5];
-    error = readMark();
+    unsigned char error = readMark();
     if(! error)
     {
         error = readData(irdata, sizeof(irdata));
         if(! error)
         {
-          if((irdata[0] == (unsigned char)~(irdata[1])) &&
-              (irdata[0] == IRPREFIX))
+          if((irdata[0] == (unsigned char)~(irdata[1])))
           {
                 if(irdata[2] == (unsigned char) ~(irdata[3]))
-                    return irdata[2];
+                {
+                    outData[0] = irdata[0];
+                    outData[1] = irdata[2];
+                    return 0;
+                }
                 else
                    error = WrongData;
           }
@@ -113,5 +129,5 @@ unsigned char getIrData(void)
             error = WrongHeader;
         }
     }
-    return 0;
+    return error;
 }

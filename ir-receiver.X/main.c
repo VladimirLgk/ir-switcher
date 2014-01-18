@@ -36,10 +36,10 @@ unsigned char toHex(unsigned char v)
 
 #define LCD_DEBUG
 //#define UART_DEBUG
-void uartErrorMessage();
-void uartOkMessage(unsigned char data);
-void lcdErrorMessage(unsigned char * msg);
-void lcdOkMessage(unsigned char * msg, unsigned char data);
+void uartErrorMessage(unsigned char error);
+void uartOkMessage(unsigned char * data);
+void lcdErrorMessage(unsigned char * msg, unsigned char error);
+void lcdOkMessage(unsigned char * msg, unsigned char * data);
 
 void calibrate(void)
 {
@@ -70,19 +70,18 @@ void calibrate(void)
     GLED = 0;
 }
 
-
 void main(void)
 {
     configure();    
 #ifdef LCD_DEBUG
     lcdInit();
     unsigned char lcdMessage[8];
+    unsigned char data[2];
 #endif
     calibrate();
     while(1)
     {
        __delay_ms(50);
-       error = 0;
 #ifdef LCD_DEBUG
       lcdMessage[0] = 0b10000000;
       lcdPuts(DIGIT0 , lcdMessage, 1);
@@ -91,7 +90,7 @@ void main(void)
        putch('\r');
        putch('\n');
 #endif
-       unsigned char data = getIrData();
+       unsigned char error = getIrData(data);
        if(error == 0)
        {
         #ifdef LCD_DEBUG
@@ -105,28 +104,28 @@ void main(void)
        else
        {
         #ifdef LCD_DEBUG
-                lcdErrorMessage(lcdMessage);
+                lcdErrorMessage(lcdMessage, error);
         #endif
         #ifdef UART_DEBUG
-                uartErrorMessage();
+                uartErrorMessage(error);
         #endif
        }
     }
 }
 
-void lcdOkMessage(unsigned char * msg, unsigned char data)
+void lcdOkMessage(unsigned char * msg, unsigned char * data)
 {
     msg[0] = 0;
     msg[1] = 0b01110011; //R
     msg[2] = 0b00011000; //R symbol
-    msg[3] = to7hex((data >> 4) & 0xf);
-    msg[4] = to7hex(data & 0xf);
-    msg[5] = 0;
-    msg[6] = 0;
+    msg[3] = to7hex((data[0] >> 4) & 0xf);
+    msg[4] = to7hex(data[0] & 0xf);
+    msg[5] = to7hex((data[1] >> 4) & 0xf);
+    msg[6] = to7hex(data[1] & 0xf);
     lcdPuts(DIGIT0 , msg, 7);
 }
 
-void lcdErrorMessage(unsigned char * msg)
+void lcdErrorMessage(unsigned char * msg, unsigned char error)
 {
     msg[0] = 0; //reset wait mark
     msg[1] = 0b01111001; //E
@@ -138,16 +137,19 @@ void lcdErrorMessage(unsigned char * msg)
     lcdPuts(DIGIT0,msg, 7);
 }
 
-void uartOkMessage(unsigned char data)
+void uartOkMessage(unsigned char * data)
 {
     putch('I');
     putch('R');
     putch(':');
-    putch(toHex((data >> 4) & 0xf));
-    putch(toHex(data & 0xf));
+    putch(toHex((data[0] >> 4) & 0xf));
+    putch(toHex(data[0] & 0xf));
+    putch(' ');
+    putch(toHex((data[1] >> 4) & 0xf));
+    putch(toHex(data[1] & 0xf));
 }
 
-void uartErrorMessage()
+void uartErrorMessage(unsigned char error)
 {
     putch('E');
     putch(':');
