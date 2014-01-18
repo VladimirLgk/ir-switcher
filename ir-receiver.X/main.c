@@ -1,7 +1,6 @@
+#include "system.h"
 #include <htc.h>	
 #include <stdio.h>
-
-#include "system.h"
 #include "ir.h"
 #include "lcd.h"
 #include "uart.h"
@@ -9,7 +8,7 @@
 __CONFIG(FOSC_INTRCIO & PWRTE_OFF & WDTE_OFF & CPD_OFF & CP_OFF & MCLRE_OFF);
 
 //store calibrated value for osc as retlw instruction in given address
-const unsigned char osccallibrate @ 0x3FF = 0x50;
+const unsigned char osccallibrate @ 0x3FF = 0x3450;
 
 #define VALUES 20
 unsigned char highLevel[VALUES];
@@ -123,8 +122,8 @@ void main(void)
 
 void puts__(const char * s)
 {
-    while(*s++)
-       putch(*s);
+    while(*s)
+       putch(*s++);
 }
 
 void measureOutput()

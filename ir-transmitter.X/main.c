@@ -30,14 +30,14 @@ void burst38khz(unsigned char value)
 {
     while(value--)
     {
+       IROUT = 1;
        _delay(WAIT_38);
-       LED = 1;
+       IROUT = 0;
        _delay(WAIT_38);
-       LED = 0;
+       IROUT = 1;
        _delay(WAIT_38);
-       LED = 1;
+       IROUT = 0;
        _delay(WAIT_38);
-       LED = 0;
     }
 }
 
@@ -58,9 +58,7 @@ void delay38khz(unsigned char value)
 
 void irPreamble()
 {
-    IROUT = 1;
     burst38khz(HiPmbLength);
-    IROUT = 0;
     delay38khz(LowPmbLength);
 }
 
@@ -69,9 +67,7 @@ void sendData(unsigned char data)
     unsigned char mask = 0x1;
     while(mask)
     {
-        IROUT = 1;
         burst38khz(shortSignalLength);
-        IROUT = 0;
         if(data & mask)
             delay38khz(longSignalLength);
         else
@@ -82,9 +78,7 @@ void sendData(unsigned char data)
 
 void irStopBit()
 {
-    IROUT = 1;
     burst38khz(shortSignalLength);
-    IROUT = 0;
     delay38khz(LowPmbLength+50);
 }
 
@@ -132,8 +126,6 @@ void configure(void)
     SERIAL = 1;
 }
 
-#define WAIT_38 12
-
 void burst38khzCal(unsigned char value)
 {
     while(value--)
@@ -171,26 +163,6 @@ void calibrate()
     LED = 1;
     LED = 0;
     LED = 1;
-/*     __delay_us(DELAY_uS);
-    LED = 0;
-    LED = 1;
-    //us34Delay(0);
-    //LED = 0;
-    //LED = 1;
-    us34Delay(1);
-    LED = 0;
-    LED = 1;
-    us34Delay(2);
-    LED = 0;
-    LED = 1;
-    us34Delay(3);
-    LED = 0;
-    //LED = 1;
-    //us34Delay(4);
-    //LED = 0;
-    //LED = 1;
-    //us34Delay(5);*/
-    //LED = 0;
     _nop();
     _nop();
     _nop();
