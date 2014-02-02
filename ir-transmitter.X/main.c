@@ -24,6 +24,8 @@ const unsigned char osccallibrate @ 0x3FF = 0x3434; //34
 
 #define WAIT_38 12
 
+//last delay  should be decreased on -4 to aviod extra delay on compare and calculation stage,
+//but timings should be depend from this time.
 void burst38khz(unsigned char value)
 {
     while(value--)
@@ -35,7 +37,7 @@ void burst38khz(unsigned char value)
        IROUT = 1;
        _delay(WAIT_38);
        IROUT = 0;
-       _delay(WAIT_38-4);
+       _delay(WAIT_38);
     }
 }
 
@@ -49,7 +51,7 @@ void delay38khz(unsigned char value)
        _nop();
        _delay(WAIT_38);
        _nop();
-       _delay(WAIT_38-4);
+       _delay(WAIT_38);
        _nop();
     }
 }
