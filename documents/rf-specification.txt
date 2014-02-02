@@ -1,0 +1,23 @@
+Specifications:
+
+    Receiver module parameters
+
+    Product Model MX-05V
+    Operating voltage: DC5V
+    Quiescent current: 4mA
+    Receiving frequency: 433MHZ
+    Receiver sensitivity:-105DB
+    Size: 30 * 14 * 7mm
+    An extra antenna is needed, please use spiral 50Ω a quarter wavelength antenna 
+
+    Technical parameters of the transmitter head
+
+    Product Model: MX-FS-03V
+    Launch distance :20-200 meters (different voltage, different results)
+    Operating voltage :3.5-12V
+    Dimensions: 19 * 19mm
+    Operating mode: AM
+    Transfer rate: 4KB/s
+    Transmitting power: 10mW
+    Transmitting frequency: 433M
+    Pinout from left to right: (DATA; VCC; GND)

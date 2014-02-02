@@ -35,7 +35,7 @@ void burst38khz(unsigned char value)
        IROUT = 1;
        _delay(WAIT_38);
        IROUT = 0;
-       _delay(WAIT_38);
+       _delay(WAIT_38-4);
     }
 }
 
@@ -49,7 +49,7 @@ void delay38khz(unsigned char value)
        _nop();
        _delay(WAIT_38);
        _nop();
-       _delay(WAIT_38);
+       _delay(WAIT_38-4);
        _nop();
     }
 }
